@@ -1,0 +1,21 @@
+---
+# Install packages
+- name: Install required packages
+  ansible.builtin.dnf:
+    name: "{{ kojid_packages }}"
+    state: present
+
+# armv7l specific
+- name: Install libkcapi for increased armv7 sockets
+  ansible.builtin.dnf:
+    name: libkcapi
+    state: present
+  when: ansible_architecture == 'armv7l'
+
+# x86_64 specific
+#- name: Install x86_64 specific packages
+#  ansible.builtin.dnf:
+#    name:
+#      - python3-osbs-client
+#    state: present
+#  when: ansible_architecture == 'x86_64'

@@ -1,0 +1,17 @@
+---
+# Storage
+- name: Ensure the koji mountpoint exists
+  ansible.builtin.file:
+    path: "{{ kojid_mount }}"
+    state: directory
+    owner: apache
+    group: apache
+    mode: '0755'
+
+- name: Mount the NFS store
+  ansible.builtin.mount:
+    path: "{{ kojid_mount }}"
+    src: "{{ kojid_nfs_path }}"
+    fstype: nfs
+    state: mounted
+  when: kojid_nfs|bool

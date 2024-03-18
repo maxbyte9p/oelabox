@@ -1,0 +1,62 @@
+---
+# kojid
+kojid_packages:
+  - koji-builder
+  - koji-builder-plugins
+  - python3-koji
+  - python3-kickstart
+  - libvirt-client
+  - strace
+  - mock
+  - createrepo_c
+  - dnf-plugins-core
+  - gpgme
+  - pykickstart
+  - rng-tools
+
+kojid_vendor: Oela
+kojid_packager: infrastructure@oelabox.local
+kojid_distribution: Oela
+kojid_web_url: https://koji.oelabox.local/koji
+kojid_hub_url: https://koji.oelabox.local/kojihub
+kojid_files_url: https://koji.oelabox.local/kojifiles
+kojid_ca_bundle: /etc/pki/tls/certs/ca-bundle.crt
+kojid_keytab: /etc/kojid.keytab
+kojid_smtp_host: smtp.oelabox.local
+kojid_smtp_user: smtpuser
+kojid_smtp_pass: smtppass
+kojid_allowed_scm: "github.com:/openela-main/*:off:/usr/bin/getsrc.sh"
+kojid_bugzilla: https://bugs.oelabox.local
+
+kojid_maxjobs: 10
+kojid_minspace: 4096
+
+# NFS
+kojid_nfs: false
+kojid_mount: /mnt/koji
+kojid_nfs_path: nfs.oelabox.local:/export/koji
+
+# Are we building images? This is definable in a playbook
+kojid_image_builder: true
+kojid_runroot_builder: true
+
+# Builtools repo
+# Not sure if we're using this yet
+kojid_buildtools_repo: False
+kojid_buildtools_repo_host: https://localhost
+kojid_buildtools_repo_url: "{{ kojid_buildtools_repo_host  }}/builder/$basearch/"
+kojid_buildtools_repo_gpgcheck: false
+kojid_buildtools_repo_gpgkey: RPM-GPG-KEY-Rocky-Infra
+
+# SSH Pubkeys, define them in a playbook
+# mockbuilder_pub_key
+# kojibuilder_pub_key
+
+# Are the kojid builders "shared" builders between different ecosystems
+# "production" and "staging" are the predetermined names and are sorted
+# as such.
+kojid_shared_builders: false
+
+# Define ulimits to avoid alloc issues
+kojid_ulimits_conf: false
+kojid_ulimits_nofiles: 10240

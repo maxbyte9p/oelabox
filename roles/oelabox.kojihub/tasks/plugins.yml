@@ -1,0 +1,15 @@
+---
+# Plugins
+- name: Deploying enabled plugins
+  ansible.builtin.copy:
+    src: "plugins/{{ item }}.py"
+    dest: "/usr/lib/koji-hub-plugins/{{ item }}.py"
+    mode: 0755
+  with_items: "{{ koji_hub_plugins_list }}"
+
+- name: Configuring enabled plugins
+  ansible.builtin.template:
+    src: "etc/koji-hub/plugins/{{ item }}.conf.j2"
+    dest: "/etc/koji-hub/plugins/{{ item }}.conf"
+    mode: 0644
+  with_items: "{{ koji_hub_plugins_list }}"

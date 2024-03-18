@@ -1,0 +1,55 @@
+[main]
+; Kerberos Auth
+principal   = {{ koji_gc_principal }}
+keytab      = {{ koji_gc_keytab }}
+krb_rdns    = False
+key_aliases =
+    6D745A60    signing
+    BBE2C108    testing-signing
+
+unprotected_keys =
+    testing-signing
+
+server = {{ koji_hub_url }}
+weburl = {{ koji_web_url }}
+
+# We don't know what we're doing with SSL CA's yet
+serverca = {{ koji_web_cacert }}
+
+# The domain name that will be appended to Koji usernames
+# when creating email notifications
+#email_domain = fedoraproject.org
+
+# SMTP user and pass (uncomment and fill in if your smtp server requires authentication)
+#smtp_user=user@example.com
+#smtp_pass=CHANGEME
+
+[prune]
+policy =
+    #stuff to protect
+    #note that tags with master lock engaged are already protected
+    tag *-updates :: keep
+    # protect modules
+    tag *-modular-* :: keep
+    tag *-modular :: keep
+    tag module-* :: keep
+    # protect infra
+    tag *-infra :: keep
+    # general age
+    age < 30 day :: skip
+
+    # sig protect
+    sig signing && age < 16 weeks :: keep
+
+    #stuff to chuck semi-rapidly
+    #tag *-testing *-candidate :: {  # nested rules
+    #    order >= 2 :: untag
+    #    order > 0 && age > 6 weeks :: untag
+    #}  #closing braces must be on a line by themselves (modulo comments/whitespace)
+    #tag *-candidate && age > 60 weeks :: untag
+    #tag *-testing *-candidate *-override && order >= 2 :: untag
+    #tag *-testing *-candidate && order > 0 && age > 6 weeks :: untag
+    #tag *-candidate && age > 8 weeks :: untag
+
+    #default: keep the last 3
+    order > 2 :: untag

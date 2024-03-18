@@ -1,0 +1,25 @@
+[web]
+SiteName = {{ koji_sitename }}
+{% if koji_theme %}
+KojiTheme = {{ koji_theme_name }}
+{% endif %}
+
+# Key urls
+KojiHubURL = {{ koji_hub_url }}
+KojiFilesURL = {{ koji_files_url }}
+
+# CA
+KojiHubCA = {{ koji_hub_ca }}
+
+# Kerberos authentication options
+WebPrincipal = {{ koji_hub_proxy_principals }}
+WebKeytab = {{ koji_hub_keytab }}
+WebCCache = /var/tmp/kojiweb.ccache
+
+LoginTimeout = 72
+
+# This must be changed and uncommented before deployment
+Secret = {{ koji_hub_secret }}
+
+LibPath = /usr/share/koji-web/lib
+LiteralFooter = True

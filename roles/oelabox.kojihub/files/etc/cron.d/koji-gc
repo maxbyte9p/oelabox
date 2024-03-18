@@ -1,0 +1,6 @@
+# Run garbage collector nightly
+SCRIPT=/usr/sbin/koji-gc
+MAILTO=infrastructure@oelabox.local
+0 8 * * *  apache /usr/local/bin/lock-wrapper koji-gc-delete $SCRIPT --action=delete --lock-file /var/tmp/koji-gc.lock
+0 9 * * *  apache /usr/local/bin/lock-wrapper koji-gc-trash $SCRIPT --action=trash --lock-file /var/tmp/koji-gc.lock
+0 10 * * * apache /usr/local/bin/lock-wrapper koji-gc-prune $SCRIPT --action=prune --lock-file /var/tmp/koji-gc.lock

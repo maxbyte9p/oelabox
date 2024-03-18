@@ -1,0 +1,43 @@
+---
+# privileges
+ipaprivileges:
+  - privilege: Privileges - Kerberos Managers
+    description: Kerberos Key Managers
+    permissions:
+      - "System: Manage Host Keytab"
+      - "System: Manage Host Keytab Permissions"
+      - "System: Manage Service Keytab"
+      - "System: Manage Service Keytab Permissions"
+      - "System: Manage User Principals"
+    role: Kerberos Managers
+    user:
+      - kerbman
+
+# Standalone Roles
+iparoles:
+  - role: IPA Client Managers
+    description: IPA Client Managers
+    privileges:
+      - "DNS Administrators"
+      - "DNS Servers"
+      - "Host Administrators"
+      - "Host Enrollment"
+      - "Host Group Administrators"
+      - "Netgroups Administrators"
+    user:
+      - hostman
+  - role: Kerberos Managers
+    description: Kerberos Key Managers
+    privileges:
+      - "Privileges - Kerberos Managers"
+      - "Service Administrators"
+    user:
+      - kerbman
+  - role: IPA User Managers
+    description: Oela Box IPA User Managers responsible for idm flow
+    privileges:
+      - "Group Administrators"
+      - "Stage User Administrators"
+      - "User Administrators"
+      - "FAS Agreement Administrators"
+...

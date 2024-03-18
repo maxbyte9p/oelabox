@@ -1,0 +1,26 @@
+---
+# Note: We do not install postgresql. It's up to you to do so, whether locally or not.
+- name: Template for koji admin and kojira
+  ansible.builtin.template:
+    src: koji-pgsql.sql.j2
+    dest: /var/tmp/koji-pgsql.sql
+    mode: '0644'
+
+- name: Load schema to postgresql database
+  community.general.postgresql_db:
+    name: "{{ koji_db_name }}"
+    target: /usr/share/doc/koji/docs/schema.sql
+    owner: "{{ koji_db_user }}"
+    state: restore
+    login_host: "{{ koji_db_host }}"
+    login_user: "{{ koji_db_user }}"
+    login_password: "{{ koji_db_pass }}"
+
+- name: Apply the postgres template
+  community.general.postgresql_db:
+    name: "{{ koji_db_name }}"
+    target: /var/tmp/koji-pgsql.sql
+    state: restore
+    login_host: "{{ koji_db_host }}"
+    login_user: "{{ koji_db_user }}"
+    login_password: "{{ koji_db_pass }}"

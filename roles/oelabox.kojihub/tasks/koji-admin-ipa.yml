@@ -1,0 +1,43 @@
+---
+# Setup the IPA service account
+- name: Create koji config directory
+  ansible.builtin.file:
+    path: "/home/{{ koji_admin_user }}/.koji"
+    state: directory
+    owner: "{{ koji_admin_user }}"
+    group: "{{ koji_admin_user }}"
+    mode: '0700'
+    recurse: true
+
+- name: Reset permissions
+  ansible.builtin.file:
+    path: "/home/{{ koji_admin_user }}"
+    state: directory
+    owner: "{{ koji_admin_user }}"
+    group: "{{ koji_admin_user }}"
+    mode: '0700'
+
+- name: Configure the koji client
+  ansible.builtin.template:
+    src: koji-client-config.j2
+    dest: "/home/{{ koji_admin_user }}/.koji/config"
+    owner: "{{ koji_admin_user }}"
+    group: "{{ koji_admin_user }}"
+    mode: '0644'
+
+- name: Ensuring we have our scripts store
+  ansible.builtin.file:
+    path: /opt/rocky-tools/scripts
+    state: directory
+    owner: "{{ koji_admin_user }}"
+    group: "{{ koji_admin_user }}"
+    mode: '0750'
+    recurse: true
+
+# name: Cron job to rebuild repos
+# cron:
+#   name: "Regenerate repos"
+#   job: "/opt/rocky-tools/scripts/regen_build_repos.sh > /dev/null 2>&1"
+#   minute: "5"
+#   hour: "3"
+#   user: "{{ koji_admin_user }}"

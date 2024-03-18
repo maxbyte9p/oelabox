@@ -1,0 +1,77 @@
+---
+# Request the certificate for the host from IPA
+# System must be enrolled as an IPA Client and must be ran as root
+- name: Check if host is IPA enrolled
+  shell: /usr/sbin/ipa-client-install --unattended 2>&1 | grep "already configured"
+  register: ipacheck
+  ignore_errors: true
+  changed_when: false
+
+- name: Verify host is IPA enrolled
+  ansible.builtin.assert:
+    that:
+      - ipacheck.rc == 0 | mandatory
+    fail_msg: "System is not enrolled to IPA"
+    success_msg: "IPA enrolled, moving on"
+    quiet: true
+
+- name: IPA Certificate Operations
+  block:
+    - name: Deploy ipa-getcert script
+      ansible.builtin.template:
+        src: "get_cert.sh.j2"
+        dest: "/root/get_cert.sh"
+        owner: root
+        group: root
+        mode: '0750'
+
+    - name: Request Certificate
+      ansible.builtin.raw: /root/get_cert.sh
+      register: ipa_cert_request
+
+    - name: Chain link certificates
+      block:
+        - name: Create chain directory
+          ansible.builtin.file:
+            state: directory
+            path: "{{ ipa_getcert_chain_location }}"
+            owner: root
+            group: "{{ ipa_getcert_group }}"
+            mode: '0750'
+
+        - name: Chain link certs
+          ansible.builtin.file:
+            state: link
+            src: "{{ item.cert_location | default(ipa_getcert_cert_default_location) }}/{{ item.name }}.crt"
+            dest: "{{ ipa_getcert_chain_location }}/{{ item.name }}.crt"
+            owner: "{{ item.owner | default(ipa_getcert_owner_default) }}"
+            group: "{{ item.owner | default(ipa_getcert_owner_default) }}"
+          with_items: "{{ ipa_getcert_requested_hostnames }}"
+
+        - name: Chain link keys
+          ansible.builtin.file:
+            state: link
+            src: "{{ item.key_location | default(ipa_getcert_cert_default_location) }}/{{ item.name }}.key"
+            path: "{{ ipa_getcert_chain_location }}/{{ item.name }}.key"
+            owner: "{{ item.owner | default(ipa_getcert_owner_default) }}"
+            group: "{{ item.owner | default(ipa_getcert_owner_default) }}"
+          with_items: "{{ ipa_getcert_requested_hostnames }}"
+
+        - name: Assemble the chain
+          ansible.builtin.assemble:
+            src: "{{ ipa_getcert_chain_location }}"
+            dest: "{{ ipa_getcert_chain_location }}/{{ item.name }}.pem"
+            regexp: "^{{ item.name }}.(crt|key)$"
+            owner: "{{ item.owner | default(ipa_getcert_owner_default) }}"
+            group: "{{ item.owner | default(ipa_getcert_owner_default) }}"
+            mode: '0640'
+          with_items: "{{ ipa_getcert_requested_hostnames }}"
+      when:
+        - ipa_getcert_chain|bool
+        - ipa_cert_request.rc == 0
+  rescue:
+    - name: "Erroring out with message"
+      ansible.builtin.debug:
+        msg: "We caught an error, likely with the ipa-getcert script. Please verify the output."
+  when:
+    - ipacheck.rc == 0

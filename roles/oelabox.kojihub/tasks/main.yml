@@ -1,0 +1,94 @@
+---
+# Koji hub and web installation
+# This is not for builder nodes
+
+- name: Apply required SELinux booleans
+  import_tasks: selinux_boolean.yml
+
+- name: Ensure Storage is ready
+  import_tasks: storage.yml
+
+- name: Install required packages
+  ansible.builtin.dnf:
+    name: "{{ koji_hub_packages }}"
+    state: present
+
+- name: Configure koji database
+  import_tasks: db.yml
+
+- name: Configure local koji admin
+  import_tasks: koji-admin-local.yml
+  when: koji_admin_client
+
+- name: Configure plugins
+  import_tasks: plugins.yml
+  when: koji_hub_plugins
+
+- name: Configure kojihub and web
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/{{ item }}"
+    mode: '0644'
+    owner: root
+    group: root
+  with_items:
+    - etc/koji-hub/hub.conf
+    - etc/kojiweb/web.conf
+  notify:
+    - restart_httpd
+
+- name: Make sure to use custom OelaBOX ssl.conf
+  template:
+    src: "templates/ssl.conf.j2"
+    dest: "/etc/httpd/conf.d/ssl.conf"
+    mode: '0644'
+    owner: root
+    group: root
+  notify: restart_httpd
+
+- name: Configure kojira
+  import_tasks: kojira.yml
+
+- name: Configure httpd for hub and web
+  ansible.builtin.template:
+    src: "etc/httpd/conf.d/{{ item }}.j2"
+    dest: "/etc/httpd/conf.d/{{ item }}"
+    mode: '0644'
+    owner: root
+    group: root
+  with_items:
+    - kojihub.conf
+    - kojiweb.conf
+  notify:
+    - restart_httpd
+
+- name: Configure robots.txt
+  ansible.builtin.copy:
+    src: "var/www/html/robots.txt"
+    dest: "/var/www/html/robots.txt"
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - restart_httpd
+
+- name: Enable httpd
+  ansible.builtin.service:
+    name: httpd
+    enabled: yes
+
+- name: Deploy custom theme for koji
+  ansible.builtin.unarchive:
+    src: "{{ koji_theme_file }}"
+    dest: /
+  when: koji_theme
+
+- name: Configure garbage collector
+  import_tasks: koji-gc.yml
+
+- name: User Sync from FAS
+  import_tasks: user-sync.yml
+  when: koji_fas_sync
+
+- name: Set SELinux fcontexts
+  import_tasks: selinux_fcontexts.yml

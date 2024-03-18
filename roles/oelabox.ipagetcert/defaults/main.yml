@@ -1,0 +1,49 @@
+---
+# ansible default variables - most variables live here
+ipa_getcert_key_default_location: "/etc/pki/tls/private/{{ ansible_fqdn }}.key"
+ipa_getcert_cert_default_location: "/etc/pki/tls/certs/{{ ansible_fqdn }}.crt"
+ipa_getcert_nss_default_location: "/etc/pki/tls/nss"
+ipa_getcert_owner_default: root
+
+# List of hostnames that should be requested
+ipa_getcert_requested_hostnames:
+  - name: "{{ ansible_fqdn }}"
+    key_location: /etc/pki/tls/private/name.key
+    cert_location: /etc/pki/tls/certs/name.crt
+
+# If you need a different ownership, you can setup the above sort of like this:
+# ipa_getcert_requested_hostnames:
+#   - name: name
+#     postcmd: "/bin/systemctl restart ejabberd"
+#     owner: ejabberd
+#     key_location: /opt/ejabberd/conf/pki
+#     cert_location: /opt/ejabberd/conf/pki
+
+# If you are using NSS.
+# ipa_getcert_nss: true
+# ipa_getcert_requested_hostnames:
+#   - name: name
+#     postcmd: "/bin/systemctl restart sigul_server"
+#     owner: sigul
+#     nss_db_dir: /etc/pki/tls/nss
+#     nss_nickname: name
+
+# If you are using cnames
+# ipa_getcert_requested_hostnames:
+#   - name: name
+#     postcmd: "/bin/systemctl restart httpd"
+#     owner: apache
+#     key_location: /etc/pki/tls/private/web.crt
+#     cert_location: /etc/pki/tls/certs/web.crt
+#     cnames:
+#       - cname.example.com
+
+# This feature coming soon
+#ipa_getcert_fqdn_symlink: true
+
+ipa_getcert_chain: false
+ipa_getcert_chain_location: /etc/pki/tls/chains
+
+# Note that when you set this to true, key_location and cert_location are
+# effectively ignored.
+ipa_getcert_nss: false

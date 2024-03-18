@@ -1,0 +1,26 @@
+---
+- name: ipaserver pre-work
+  hosts: ipaserver
+  become: yes
+
+  handlers:
+    - import_tasks: ansible-dns-management/handlers/main.yml
+
+  tasks:
+    - name: /etc/hosts
+      ansible.builtin.copy:
+        dest: /etc/hosts
+        content: |
+          127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+          ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+          192.168.121.11 ipa.oelabox.local ipa
+      notify: restart_networkmanager
+
+- name: Provision Oela Box IPA server
+  ansible.builtin.import_playbook: ansible-ipa-management/role-oelabox-ipa.yml
+
+- name: Initialize IPA Team
+  ansible.builtin.import_playbook: ansible-ipa-management/init-oelabox-ipa-team.yml
+  vars:
+    ipa_binder_name: binder
+    ipa_binder_password: freeloader

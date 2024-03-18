@@ -1,0 +1,15 @@
+---
+- name: Setup DNS for IPA client
+  ansible.builtin.import_playbook: ansible-dns-management/role-oelabox-dns-client.yml
+  vars:
+    host: ipaclient
+    resolv_entries:
+      - entry:
+        nameserver: 192.168.121.11
+        search:
+          - oelabox.local
+
+- name: Provision Oela Box IPA client 
+  ansible.builtin.import_playbook: ansible-ipa-management/role-oelabox-ipa-client.yml
+  vars:
+    host: ipaclient

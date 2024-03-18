@@ -1,0 +1,126 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  become: yes
+
+  vars:
+    invoking_user: "{{ lookup('ansible.builtin.env', 'SUDO_USER', default=lookup('ansible.builtin.env', 'USER')) }}"
+    rockybox: https://dl.rockylinux.org/vault/rocky/9.2/images/x86_64/Rocky-9-Vagrant-Libvirt-9.2-20230513.0.x86_64.box
+    centosbox: https://cloud.centos.org/centos/8-stream/x86_64/images/CentOS-Stream-Vagrant-8-20240101.0.x86_64.vagrant-libvirt.box
+
+  tasks:
+    - name: Add hashicorp repo to system
+      ansible.builtin.get_url:
+        url: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+        dest: /etc/yum.repos.d/hashicorp.repo
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Install vagrant
+      ansible.builtin.dnf:
+        name: vagrant
+        state: present
+
+    - name: Enable the CRB repository
+      community.general.ini_file:
+        dest: /etc/yum.repos.d/rocky.repo
+        section: crb
+        option: enabled
+        value: 1
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Install libvirt-devel and libvirt
+      ansible.builtin.dnf:
+        name:
+          - libvirt-devel
+          - libvirt
+        state: present
+
+    - name: Start libvirtd
+      ansible.builtin.service:
+        name: libvirtd
+        state: started
+
+    - name: Enable libvirtd
+      ansible.builtin.service:
+        name: libvirtd
+        enabled: yes
+
+    - name: Install ruby and ruby-devel
+      ansible.builtin.dnf:
+        name:
+          - ruby
+          - ruby-devel
+        state: present
+
+    - name: Install "Development Tools" group
+      ansible.builtin.dnf:
+        name: '@Development Tools'
+        state: present
+
+    - name: Install "Virtualization Host" group
+      ansible.builtin.dnf:
+        name: '@Virtualization Host'
+        state: present
+
+#    - name: Create "oelabox" user
+#      ansible.builtin.user:
+#        name: oelabox
+#        comment: Oela Box
+#        groups: libvirt
+#        password: freeloader
+#        state: present
+
+    - name: Add invoking user to the libvirt group
+      ansible.builtin.user:
+        name: "{{ invoking_user }}"
+        groups: libvirt
+        append: yes
+
+    - name: Install vagrant-libvirt plugin
+      ansible.builtin.shell: "set -o pipefail && vagrant plugin install vagrant-libvirt"
+      changed_when: "1 != 1"
+      become: true
+      become_user: "{{ invoking_user }}"
+
+    - name: Add Rocky Linux 9.2 box to Vagrant
+      ansible.builtin.shell: "set -o pipefail && vagrant box add --name rockylinux/9 -f {{ rockybox }}"
+      changed_when: "1 != 1"
+      become: true
+      become_user: "{{ invoking_user }}"
+
+    - name: Add CentOS Stream 8 box to Vagrant
+      ansible.builtin.shell: "set -o pipefail && vagrant box add --name centos/stream8 -f {{ centosbox }}"
+      changed_when: "1 != 1"
+      become: true
+      become_user: "{{ invoking_user }}"
+
+    - name: Overwrite /etc/hosts
+      ansible.builtin.copy:
+        dest: "/etc/hosts"
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+          ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+          192.168.121.10 dns.oelabox.local
+          192.168.121.11 ipa.oelabox.local
+          192.168.121.12 koji.oelabox.local
+
+    - name: Install freeipa.ansible_freeipa collection
+      ansible.builtin.shell: "set -o pipefail && ansible-galaxy collection install freeipa.ansible_freeipa"
+      changed_when: "1 != 1"
+      become: true
+      become_user: "{{ invoking_user }}"
+
+    - name: Install ktdreyer.koji_ansible collection
+      ansible.builtin.shell: "set -o pipefail && ansible-galaxy collection install ktdreyer.koji_ansible"
+      changed_when: "1 != 1"
+      become: true
+      become_user: "{{ invoking_user }}"
+

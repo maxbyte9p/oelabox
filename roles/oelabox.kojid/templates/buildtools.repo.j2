@@ -1,0 +1,10 @@
+[r8-rockytools]
+name = Rocky Infra Tools
+baseurl = {{ kojid_buildtools_repo_url }}
+enabled=1
+{% if kojid_buildtools_repo_gpgcheck %}
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/kojid_buildtools_repo_gpgkey
+{% else %}
+gpgcheck=0
+{% endif %}

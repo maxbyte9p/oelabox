@@ -1,0 +1,9 @@
+[rockymsg]
+host = {{ koji_hub_plugin_mqtt_host }}
+port = 8883
+tls_cert = {{ koji_hub_plugin_mqtt_tls_cert }}
+tls_key = {{ koji_hub_plugin_mqtt_tls_key }}
+ca_cert = {{ koji_hub_plugin_mqtt_ca }}
+tls_insecure = False
+tls_version = 2
+exclude_tags = {% for tag in koji_hub_plugin_mqtt_excluded_tags %}{{ tag }}{%- if not loop.last -%},{% endif %}{% endfor %}

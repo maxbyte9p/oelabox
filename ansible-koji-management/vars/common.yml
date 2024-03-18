@@ -1,0 +1,28 @@
+---
+oela_ipa_realm: "OELABOX.LOCAL"
+oela_ldap_bind_dn: "uid=binder,cn=sysaccounts,cn=etc,dc=oelabox,dc=local"
+oela_ldap_user_basedn: "cn=users,cn=accounts,dc=oelabox,dc=local"
+oela_ldap_group_basedn: "cn=groups,cn=accounts,dc=oelabox,dc=local"
+oela_ldap_account_basedn: "cn=accounts,dc=oelabox,dc=local"
+# Requires jinja 2.9+
+oela_ipaserver_list: "{{ groups['ipaserver'] + groups['ipareplicas'] }}"
+oela_ipaserver_lb: "ipa.oelabox.local"
+# These will be in a vault
+#rocky_ldap_bind_pw: "{{ ipa_binder_password }}"
+oela_ldap_bind_pw: freeloader
+
+oela_smtp_address: "oelabox.local"
+oela_smtp_port: "587"
+# username / pw need to be setup
+oela_smtp_domain: "oelabox.local"
+oela_smtp_authentication: "login"
+oela_smtp_enable_starttls_auto: "true"
+oela_smtp_tls: "true"
+oela_smtp_openssl_verify_mode: "none"
+oela_smtp_ca_path: "/etc/pki/tls/certs"
+oela_smtp_ca_file: "/etc/pki/tls/certs/ca-bundle.crt"
+allowed_rsyslog_clients:
+  - 127.0.0.1
+  - 192.168.121.0/24
+remote_rsyslog_host: ""
+...

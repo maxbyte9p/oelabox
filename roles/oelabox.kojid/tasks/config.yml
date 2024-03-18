@@ -1,0 +1,84 @@
+---
+# kojid configuration
+
+# sysctl and limits
+- name: set highmem_is_dirtyable on armv7 builders if applicable
+  ansible.builtin.sysctl:
+    name: vm.highmem_is_dirtyable
+    value: 1
+    state: present
+    sysctl_set: true
+    reload: true
+  when: ansible_architecture == 'armv7l'
+
+- name: Set nofile limit to 10240
+  ansible.builtin.template:
+    src: 00-limit.conf.j2
+    dest: /etc/security/limits.d/00-limit.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+# oz and plugins
+#- name: OZ Config
+#  ansible.builtin.template:
+#    src: oz.cfg.j2
+#    dest: /etc/oz/oz.cfg
+#    owner: root
+#    group: root
+#    mode: '0644'
+#  notify: restart_kojid
+
+- name: runroot config
+  ansible.builtin.template:
+    src: runroot.conf.j2
+    dest: /etc/kojid/plugins/runroot.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart_kojid
+
+# kojid base configuration
+- name: Configure koji.conf
+  ansible.builtin.template:
+    src: koji.conf.j2
+    dest: /etc/koji.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart_kojid
+
+- name: Configure kojid
+  ansible.builtin.template:
+    src: kojid.conf.j2
+    dest: /etc/kojid/kojid.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart_kojid
+
+- name: Set /etc/mock/site-defaults.cfg
+  ansible.builtin.template:
+    src: site-defaults.cfg.j2
+    dest: /etc/mock/site-defaults.cfg
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart_kojid
+
+# systemd override
+- name: Override kojid.service
+  ansible.builtin.template:
+    src: kojid.service.j2
+    dest: /etc/systemd/system/kojid.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - reload_systemd
+    - restart_kojid
+
+- name: Enable kojid
+  ansible.builtin.service:
+    name: kojid
+    enabled: yes

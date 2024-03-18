@@ -1,0 +1,39 @@
+#!/bin/bash
+# This script will take care of the certificate process for IPA.
+# There may be more than one request done based on the vars of the playbook.
+
+{% for ipahosts in ipa_getcert_requested_hostnames %}
+
+{% if ipa_getcert_nss %}
+nss_db_path="{{ ipahosts.nss_db_dir | default(ipa_getcert_nss_default_location) }}"
+if [ ! -d "${nss_db_path}" ] && [ ! -L "${nss_db_path}" ]; then
+   mkdir -p "${nss_db_path}"
+fi
+{% endif %}
+
+/usr/bin/ipa-getcert request -r -w \
+  -I "{{ ipahosts.name }}" \
+  -N "CN={{ ipahosts.name }}" \
+  -D "{{ ipahosts.name }}" \
+  {% if ipahosts.cnames is defined %}
+  {% for cname in ipahosts.cnames %}
+  -D "{{ cname }}" \
+  {% endfor %}
+  {% endif %}
+  {% if ipa_getcert_nss %}
+  -d "${nss_db_path}" \
+  -n {{ ipahosts.nss_nickname | default(ansible_fqdn) }} \
+  {% else %}
+  -k "{{ ipahosts.key_location | default(ipa_getcert_key_default_location) }}" \
+  -f "{{ ipahosts.cert_location | default(ipa_getcert_cert_default_location) }}" \
+  {% endif %}
+  {% if ipahosts.postcmd is defined %}
+  -C "{{ ipahosts.postcmd }}" \
+  {% endif %}
+  {% if ipahosts.owner is defined %}
+  -O "{{ ipahosts.owner }}" \
+  -o "{{ ipahosts.owner }}" \
+  {% endif %}
+  -K "{{ ipahosts.service | default('host') }}/{{ ipahosts.name }}"
+
+{% endfor %}

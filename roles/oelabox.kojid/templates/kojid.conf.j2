@@ -1,0 +1,36 @@
+[kojid]
+sleeptime=15
+maxjobs={{ kojid_maxjobs }}
+minspace={{ kojid_minspace }}
+topdir={{ kojid_mount }}
+workdir=/tmp/koji
+mockdir=/var/lib/mock
+mockuser=kojibuilder
+vendor={{ kojid_vendor }}
+packager={{ kojid_packager }}
+mockhost=redhat-linux-gnu
+server={{ kojid_hub_url }}
+topurl={{ kojid_files_url }}
+use_createrepo_c=True
+from_addr=Koji Build System <buildsys@oelabox.local>
+admin_emails="infrastructure@oelabox.local"
+;smtphost={{ kojid_smtp_host }}
+;smtp_user={{ kojid_smtp_user }}
+;smtp_pass={{ kojid_smtp_pass }}
+host_principal_format = compile/%s@OELABOX.LOCAL
+keytab = {{ kojid_keytab }}
+serverca = {{ kojid_ca_bundle }}
+
+; Modify
+allowed_scms={{ kojid_allowed_scm }}
+
+; Other settings
+build_arch_can_fail = true
+
+{% set plugins = [] %}
+
+{% if kojid_runroot_builder %}
+{{ plugins.append("runroot") }}
+{% endif %}
+
+plugins = {{ plugins | join(" ") }}

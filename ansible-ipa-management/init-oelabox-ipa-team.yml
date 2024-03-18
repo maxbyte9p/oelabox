@@ -1,0 +1,35 @@
+---
+# This builds out the initial users and groups for the Oela Box infra
+- name: Create our initial users
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+  vars_files:
+  - vars/ipa/users.yml
+  - vars/ipa/adminusers.yml
+  - vars/ipa/svcusers.yml
+  - vars/ipa/groups.yml
+  - vars/ipa/ipaprivs.yml
+
+  tasks:
+    - name: "Checking for user variables"
+      ansible.builtin.assert:
+        that:
+          - ipaadmin_password | mandatory
+          - users | mandatory
+          - ipagroups | mandatory
+        success_msg: "Required variables provided"
+        fail_msg: "We are missing users or ipa admin password"
+
+    - name: "Start users"
+      import_tasks: import-oelausers.yml
+
+    - name: "Start groups"
+      import_tasks: import-oelagroups.yml
+
+    - name: "Start sudo for admins"
+      import_tasks: import-oelasudo.yml
+
+    - name: "Start privileges for services"
+      import_tasks: import-oelaipaprivs.yml
+...

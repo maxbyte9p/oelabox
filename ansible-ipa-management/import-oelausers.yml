@@ -1,0 +1,71 @@
+---
+# Creates the first set of users for the IdM Infrastructure. This
+# should create both regular and admin accounts for separation of
+# privilege.
+- name: "Creating Initial Accounts"
+  freeipa.ansible_freeipa.ipauser:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: "{{ item.name }}"
+    first: "{{ item.first }}"
+    last: "{{ item.last }}"
+    email: "{{ item.email|default(omit) }}"
+    password: "{{ item.password }}"
+    title: "{{ item.title }}"
+    loginshell: "{{ item.loginshell }}"
+    update_password: on_create
+  loop: "{{ users }}"
+  tags:
+    - users
+
+- name: "Creating Initial Admin Accounts"
+  freeipa.ansible_freeipa.ipauser:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: "{{ item.name }}"
+    first: "{{ item.first }}"
+    last: "{{ item.last }}"
+    email: "{{ item.email|default(omit) }}"
+    password: "{{ item.password }}"
+    title: "{{ item.title }}"
+    loginshell: "{{ item.loginshell }}"
+    update_password: on_create
+  loop: "{{ adminusers }}"
+  tags:
+    - users
+
+- name: "Creating Service Accounts"
+  freeipa.ansible_freeipa.ipauser:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: "{{ item.name }}"
+    first: "{{ item.first }}"
+    last: "{{ item.last }}"
+    email: "{{ item.email|default(omit) }}"
+    password: "{{ item.password }}"
+    title: "{{ item.title }}"
+    loginshell: "{{ item.loginshell }}"
+    update_password: on_create
+  loop: "{{ svcusers }}"
+  tags:
+    - users
+
+- name: "Creating bind account template - binder"
+  ansible.builtin.template:
+    src: "templates/tmp/binder.update.j2"
+    dest: "/tmp/binder.update"
+    owner: root
+    group: root
+    mode: '0600'
+  tags:
+    - users
+
+- name: "Adding in the bind account - binder"
+  ansible.builtin.command: "/usr/sbin/ipa-ldap-updater /tmp/binder.update"
+  register: bind_account
+  changed_when: "bind_account.rc == 0"
+  tags:
+    - users
+
+- name: "Remove template"
+  ansible.builtin.file:
+    path: "/tmp/binder.update"
+    state: absent
+...

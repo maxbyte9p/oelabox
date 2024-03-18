@@ -1,0 +1,56 @@
+---
+# Creates the first server for an IPA infrastructure
+# Recommended specs for the IPA systems, that scale based on number of objects:
+# CPU: 2 cores
+# Memory: 4GB
+# Storage: 10G /var/lib/dirsrv
+# System fully up to date
+# Define "host" as a hostgroup name or a single host
+- name: Configure IPA server
+  hosts: ipaserver
+  become: true
+  vars_files:
+    - vars/ipa/common.yml
+    - vars/ipa/ipaserver.yml
+
+  # This is to try to avoid the handler issue in pre/post tasks
+  handlers:
+    - import_tasks: handlers/main.yml
+
+  pre_tasks:
+    - name: Check if ansible cannot be run here
+      ansible.builtin.stat:
+        path: /etc/no-ansible
+      register: no_ansible
+
+    - name: Verify if we can run ansible
+      ansible.builtin.assert:
+        that:
+          - "not no_ansible.stat.exists"
+        success_msg: "We are able to run on this node"
+        fail_msg: "/etc/no-ansible exists - skipping run on this node"
+
+    - name: Perform domain pre-work
+      ansible.builtin.import_tasks: tasks/domain-prework.yml
+
+  roles:
+    - role: freeipa.ansible_freeipa.ipaserver
+      state: present
+
+  post_tasks:
+    - name: Touching run file that ansible has ran here
+      ansible.builtin.file:
+        path: /var/log/ansible.run
+        state: touch
+        mode: '0644'
+        owner: root
+        group: root
+
+    - name: Turn on reverse zone syncing
+      freeipa.ansible_freeipa.ipadnsconfig:
+        ipaadmin_password: '{{ ipaadmin_password }}'
+        allow_sync_ptr: true
+
+    - name: Configure recursion for private nets
+      ansible.builtin.import_tasks: tasks/dns-ext.yml
+...

@@ -1,0 +1,8 @@
+[kojira]
+server={{ koji_hub_url }}
+topdir={{ koji_mount }}
+logfile=/var/log/kojira.log
+;with_src=no
+principal = {{ koji_kojira_principal }}
+keytab = {{ koji_kojira_keytab }}
+serverca = {{ koji_hub_ca }}

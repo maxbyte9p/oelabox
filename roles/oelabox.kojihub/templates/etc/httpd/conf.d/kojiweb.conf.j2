@@ -1,0 +1,72 @@
+#We use wsgi by default
+Alias /koji "/usr/share/koji-web/scripts/wsgi_publisher.py"
+#(configuration goes in /etc/kojiweb/web.conf)
+
+RewriteEngine on
+RewriteCond %{HTTPS} off
+RewriteRule .* https://%{HTTP_HOST}%{REQUEST_URI} [R=302,L]
+RewriteRule  ^/$    /koji [R,L]
+
+ Header always set X-Frame-Options "SAMEORIGIN"
+ Header always set X-Xss-Protection "1; mode=block"
+ Header always set X-Content-Type-Options "nosniff"
+ Header always set Referrer-Policy "same-origin"
+
+# Python 3 Cheetah expectes unicode everywhere, apache's default lang is C
+# which is not sufficient to open our templates
+WSGIDaemonProcess koji lang=C.UTF-8
+WSGIProcessGroup koji
+
+<Directory "/usr/share/koji-web/scripts/">
+    Options ExecCGI
+    SetHandler wsgi-script
+    WSGIProcessGroup koji
+    WSGIApplicationGroup %{GLOBAL}
+    # ^ works around an OpenSSL issue
+    # see: https://cryptography.io/en/latest/faq/#starting-cryptography-using-mod-wsgi-produces-an-internalerror-during-a-call-in-register-osrandom-engine
+    <IfVersion < 2.4>
+        Order allow,deny
+        Allow from all
+    </IfVersion>
+    <IfVersion >= 2.4>
+        Require all granted
+    </IfVersion>
+</Directory>
+
+# uncomment this to enable authentication via Kerberos
+<Location /koji/login>
+    AuthType GSSAPI
+    AuthName "Koji Web UI"
+    GssapiCredStore keytab:{{ koji_web_keytab }}
+    Require valid-user
+    ErrorDocument 401 /koji-static/errors/unauthorized.html
+</Location>
+
+Alias /koji-static/ "/usr/share/koji-web/static/"
+
+<Directory "/usr/share/koji-web/static/">
+    Options None
+    AllowOverride None
+    <IfVersion < 2.4>
+        Order allow,deny
+        Allow from all
+    </IfVersion>
+    <IfVersion >= 2.4>
+        Require all granted
+    </IfVersion>
+</Directory>
+
+Alias /repos {{ koji_mount }}/repos
+<Directory "{{ koji_mount }}/repos">
+    Options Indexes FollowSymLinks
+    AllowOverride None
+    #HeaderName /header/header.html
+    <IfVersion < 2.4>
+        Order allow,deny
+        Allow from all
+    </IfVersion>
+    <IfVersion >= 2.4>
+        IndexOptions FancyIndexing VersionSort NameWidth=* HTMLTable Charset=UTF-8
+        Require all granted
+    </IfVersion>
+</Directory>

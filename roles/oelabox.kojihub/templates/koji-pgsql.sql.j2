@@ -1,0 +1,18 @@
+with user_id as (insert into users (name, status, usertype) values ('{{ koji_admin_user }}', 0, 0) returning id)
+insert into user_krb_principals (user_id, krb_principal) values ((select id from user_id),'{{ koji_admin_principal }}');
+insert into user_perms (user_id, perm_id, creator_id) values (1, 1, 1);
+with user_id as (insert into users (name, status, usertype) values ('{{ koji_kojira_user }}', 0, 0) returning id)
+insert into user_krb_principals (user_id, krb_principal) values ((select id from user_id),'{{ koji_kojira_principal }}');
+INSERT INTO user_perms (user_id, perm_id, creator_id) VALUES (2, 10, 1);
+with user_id as (insert into users (name, status, usertype) values ('{{ koji_mbs_user }}', 0, 0) returning id)
+insert into user_krb_principals (user_id, krb_principal) values ((select id from user_id),'{{ koji_mbs_principal }}');
+INSERT INTO user_perms (user_id, perm_id, creator_id) VALUES (3, 1, 1);
+with user_id as (insert into users (name, status, usertype) values ('{{ koji_sigul_user }}', 0, 0) returning id)
+insert into user_krb_principals (user_id, krb_principal) values ((select id from user_id),'{{ koji_sigul_principal }}');
+INSERT INTO user_perms (user_id, perm_id, creator_id) VALUES (4, 1, 1);
+with user_id as (insert into users (name, status, usertype) values ('distrobuild', 0, 0) returning id)
+insert into user_krb_principals (user_id, krb_principal) values ((select id from user_id),'koji/distrobuild@OELABOX.LOCAL');
+INSERT INTO user_perms (user_id, perm_id, creator_id) VALUES (5, 1, 1);
+with user_id as (insert into users (name, status, usertype) values ('{{ koji_gc_name }}', 0, 0) returning id)
+insert into user_krb_principals (user_id, krb_principal) values ((select id from user_id),'{{ koji_gc_principal }}');
+INSERT INTO user_perms (user_id, perm_id, creator_id) VALUES (6, 1, 1);

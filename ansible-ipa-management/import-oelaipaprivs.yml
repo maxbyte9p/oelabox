@@ -1,0 +1,45 @@
+---
+# Creates necessary privileges for services
+- name: "Creating necessary privileges"
+  freeipa.ansible_freeipa.ipaprivilege:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: "{{ item.privilege }}"
+    description: "{{ item.description }}"
+  loop: "{{ ipaprivileges }}"
+  when: ipaprivileges is defined
+  tags:
+    - rbac
+
+- name: "Creating permissions"
+  freeipa.ansible_freeipa.ipaprivilege:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: "{{ item.privilege }}"
+    permission: "{{ item.permissions }}"
+    action: member
+  loop: "{{ ipaprivileges }}"
+  when: ipaprivileges is defined
+  tags:
+    - rbac
+
+- name: "Creating roles based on custom privileges"
+  freeipa.ansible_freeipa.iparole:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: "{{ item.role }}"
+    privilege: "{{ item.privilege }}"
+    user: "{{ item.user|default(omit) }}"
+  loop: "{{ ipaprivileges }}"
+  when: ipaprivileges is defined
+  tags:
+    - rbac
+
+- name: "Creating roles based on standard privileges"
+  freeipa.ansible_freeipa.iparole:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: "{{ item.role }}"
+    privilege: "{{ item.privileges }}"
+    user: "{{ item.user|default(omit) }}"
+  loop: "{{ iparoles }}"
+  when: iparoles is defined
+  tags:
+    - rbac
+...

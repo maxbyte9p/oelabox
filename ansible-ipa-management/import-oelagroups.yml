@@ -1,0 +1,15 @@
+---
+# Creates the first set of groups for the IdM Infrastructure
+- name: "Creating Mandatory Groups"
+  freeipa.ansible_freeipa.ipagroup:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: "{{ item.group }}"
+    description: "{{ item.description }}"
+    nonposix: false
+    user: "{{ item.user | default(none) }}"
+    membermanager_user: "{{ item.managers_users | default(omit) }}"
+    membermanager_group: "{{ item.managers_groups | default(omit) }}"
+  loop: "{{ ipagroups }}"
+  tags:
+    - groups
+...

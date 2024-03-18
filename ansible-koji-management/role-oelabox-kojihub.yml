@@ -1,0 +1,165 @@
+---
+# Stands up an ipsilon instance for simple SSO
+- name: Configure koji hub and web server
+  hosts: kojihub
+  become: true
+  vars_files:
+    #- vars/vaults/encpass.yml
+    - vars/common.yml
+    - vars/production/kojihub.yml
+    - vars/production/koji-common.yml
+
+  # This is to try to avoid the handler issue in pre/post tasks
+  handlers:
+    - ansible.builtin.import_tasks: handlers/main.yml
+
+  pre_tasks:
+    - name: Check if ansible cannot be run here
+      ansible.builtin.stat:
+        path: /etc/no-ansible
+      register: no_ansible
+
+    - name: Verify if we can run ansible
+      ansible.builtin.assert:
+        that:
+          - "not no_ansible.stat.exists"
+        success_msg: "We are able to run on this node"
+        fail_msg: "/etc/no-ansible exists - skipping run on this node"
+
+    - name: Check for keytabs - web
+      ansible.builtin.stat:
+        path: /etc/keytabs/koji-web.keytab
+      register: koji_keytab
+      changed_when: "1 != 1"
+
+    - name: Check for keytabs - kojira
+      ansible.builtin.stat:
+        path: /etc/keytabs/kojira.keytab
+      register: kojira_keytab
+      changed_when: "1 != 1"
+
+    - name: Check for keytabs - gc
+      ansible.builtin.stat:
+        path: /etc/keytabs/koji-gc.keytab
+      register: gc_keytab
+      changed_when: "1 != 1"
+
+    - name: Check for keytabs - host
+      ansible.builtin.stat:
+        path: /etc/keytabs/host.keytab
+      register: host_keytab
+      changed_when: "1 != 1"
+
+    - name: Verify keytab
+      ansible.builtin.assert:
+        that:
+          - "koji_keytab.stat.exists"
+          - "kojira_keytab.stat.exists"
+          - "gc_keytab.stat.exists"
+          - "host_keytab.stat.exists"
+        success_msg: "It is likely we have all keytabs"
+        fail_msg: "There are no keytabs. Please build the keytabs."
+
+    # EPEL and PowerTools are required for ipsilon to function
+    # I also couldn't find an ansible built-in to do this
+    - name: Enable the PowerTools repository
+      community.general.ini_file:
+        dest: /etc/yum.repos.d/CentOS-Stream-PowerTools.repo
+        section: powertools
+        option: enabled
+        value: 1
+        owner: root
+        group: root
+        mode: '0644'
+      when: ansible_distribution_major_version == '8'
+
+    - name: Enable the CRB repository
+      community.general.ini_file:
+        dest: /etc/yum.repos.d/rocky.repo
+        section: crb
+        option: enabled
+        value: 1
+        owner: root
+        group: root
+        mode: '0644'
+      when: ansible_distribution_major_version | int >= 9
+
+    - name: Enable the EPEL repository
+      ansible.builtin.dnf:
+        name: epel-release
+        state: present
+      tags:
+        - packages
+
+    - name: Install rocky-tools copr
+      ansible.builtin.yum_repository:
+        name: copr:copr.fedorainfracloud.org:nalika:rockylinux-tool
+        description: Copr repo for rockylinux-tools owned by nalika
+        file: copr_repos
+        baseurl: https://download.copr.fedorainfracloud.org/results/nalika/rockylinux-tools/epel-8-$basearch/
+        gpgcheck: true
+        gpgkey: https://download.copr.fedorainfracloud.org/results/nalika/rockylinux-tools/pubkey.gpg
+        enabled: true
+      when: ansible_distribution_major_version == '8'
+
+  # Right now, we are not sure how or where we'll get our certificates. So we
+  # are presenting a choice by setting a variable, koji_internal_ca. There is a
+  # change that we will have to do internal certs for mqtt anyway.
+  # TODO: We need an MQTT role and pre_tasks for the keytabs for this role
+  roles:
+    #- role: geerlingguy.certbot
+    #  state: present
+    #  when: not koji_internal_ca
+
+    - role: oelabox.ipagetcert
+      state: present
+      # when: koji_internal_ca
+
+    - role: oelabox.geerlingguy.postgresql
+      state: present
+      # when: koji_postgresql_vm
+
+    - role: oelabox.kojihub
+      state: present
+
+  post_tasks:
+    #- name: "Setup shared filesystem mount"
+    #  ansible.builtin.import_tasks: tasks/koji_efs.yml
+    - name: kinit as koji admin using password
+      ansible.builtin.shell: "set -o pipefail && echo \"ThisIsNotMyPassword1!\" | kinit oelakoji@OELABOX.LOCAL"
+      check_mode: false
+      changed_when: "1 != 1"
+      become: true
+      become_user: koji
+        #when: oelakoji_has_password | bool
+    
+    - name: "Configure Koji builder for hub"
+      ktdreyer.koji_ansible.koji_host:
+        koji: koji
+        name: koji.oelabox.local
+        arches: [x86_64,i386]
+        state: enabled
+        channels:
+          - default
+          - createrepo
+      become: true
+      become_user: koji
+
+    - name: "Make sure kojira has repo permision"
+      ktdreyer.koji_ansible.koji_user:
+        koji: koji
+        name: kojira
+        state: enabled
+        permissions: [sign, repo]
+      become: true
+      become_user: koji
+          
+
+    - name: Touching run file that ansible has ran here
+      file:
+        path: /var/log/ansible.run
+        state: touch
+        mode: '0644'
+        owner: root
+        group: root
+...

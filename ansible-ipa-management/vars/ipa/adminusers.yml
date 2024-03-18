@@ -1,0 +1,9 @@
+---
+adminusers:
+  - name: oelaadmin
+    first: Oela
+    last: Admin
+    password: ThisIsNotMyPassword1!
+    title: Oela Box Admin
+    loginshell: /bin/bash
+...

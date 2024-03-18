@@ -1,0 +1,22 @@
+[Unit]
+Description=Koji build server
+Documentation=https://docs.pagure.org/koji/server_howto/
+
+After=network.target
+
+[Service]
+TasksMax=infinity
+Restart=on-failure
+ExecStart=/usr/sbin/kojid \
+       --fg \
+       --force-lock \
+       --verbose
+ExecReload=/bin/kill -USR1 $MAINPID
+
+{% if kojid_ulimits_conf %}
+LimitNOFILE={{ kojid_ulimits_nofiles }}
+LimitNOFILESoft={{ kojid_ulimits_nofiles }}
+{% endif %}
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,29 @@
+---
+# handlers
+- name: restart_kojid
+  service:
+    name: kojid
+    state: restarted
+    enabled: true
+
+- name: disable_kojid
+  service:
+    name: kojid
+    state: stopped
+    enabled: false
+
+- name: reload_systemd
+  systemd:
+    daemon_reload: true
+
+- name: restart_kojid_staging
+  service:
+    name: kojid_staging
+    state: restarted
+    enabled: true
+
+- name: restart_kojid_production
+  service:
+    name: kojid_production
+    state: restarted
+    enabled: true

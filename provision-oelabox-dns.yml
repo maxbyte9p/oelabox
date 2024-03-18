@@ -1,0 +1,3 @@
+---
+- name: Provision Oela Box DNS server
+  ansible.builtin.import_playbook: ansible-dns-management/role-oelabox-dns.yml

@@ -1,0 +1,48 @@
+---
+- name: Fetch Koji Keytabs
+  hosts: kojihub
+  become: yes
+
+  vars:
+    host: koji.oelabox.local
+    ipa_admin: admin
+    ipaadmin_password: freeloader
+    ipa_server: ipa.oelabox.local
+    ipa_owner: root
+    ipa_keytab_file_perms: '0644'
+
+    keytabs:
+      - keytab:
+        service: compile/koji.oelabox.local
+        path: /etc/kojid.keytab
+      - keytab:
+        service: HTTP/koji.oelabox.local
+        path: /etc/keytabs/koji-web.keytab
+      - keytab:
+        service: kojira/koji.oelabox.local
+        path: /etc/keytabs/kojira.keytab
+      - keytab:
+        service: koji-gc/koji.oelabox.local
+        path: /etc/keytabs/koji-gc.keytab
+
+  tasks:
+    - name: '/etc/keytabs'
+      ansible.builtin.file:
+        path: /etc/keytabs
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: '/etc/keytabs/host.keytab'
+      ansible.builtin.file:
+        src: /etc/krb5.keytab
+        dest: /etc/keytabs/host.keytab
+        state: link
+
+    - name: Fetch Keytabs
+      include_tasks: import-ipakeytab.yml
+      vars:
+        ipa_service: '{{ item.service }}'
+        ipa_keytab_fullpath: '{{ item.path }}'
+      loop: '{{ keytabs }}'

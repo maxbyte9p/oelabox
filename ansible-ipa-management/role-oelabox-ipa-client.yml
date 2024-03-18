@@ -1,0 +1,42 @@
+---
+# Configures an IPA client for the Oela Box infrastructure
+# Define "host" as a hostgroup name or a single host
+- name: Configure IPA client
+  hosts: "{{ host | default(ipaclient) }}"
+  become: true
+  vars_files:
+    - vars/ipa/common.yml
+    - vars/ipa/ipaclient.yml
+
+  pre_tasks:
+    - name: Check if ansible cannot be run here
+      ansible.builtin.stat:
+        path: /etc/no-ansible
+      register: no_ansible
+
+    - name: Verify if we can run ansible
+      ansible.builtin.assert:
+        that:
+          - "not no_ansible.stat.exists"
+        success_msg: "We are able to run on this node"
+        fail_msg: "/etc/no-ansible exists - skipping run on this node"
+
+    - name: Apply hostname based on inventory name
+      hostname:
+        name: "{{ inventory_hostname }}"
+        use: systemd
+      when: ansible_fqdn != inventory_hostname
+
+  roles:
+    - role: freeipa.ansible_freeipa.ipaclient
+      state: present
+
+  post_tasks:
+    - name: Touching run file that ansible has ran here
+      ansible.builtin.file:
+        path: /var/log/ansible.run
+        state: touch
+        mode: '0644'
+        owner: root
+        group: root
+...

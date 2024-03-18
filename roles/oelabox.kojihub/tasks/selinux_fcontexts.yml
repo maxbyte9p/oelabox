@@ -1,0 +1,21 @@
+- name: Allow apache to R/W /mnt/koji
+  community.general.sefcontext:
+    target: "/mnt/koji(/.*)?"
+    setype: public_content_rw_t
+    state: present
+
+- name: Allow apache to R/W /mnt/koji subdirs
+  ansible.builtin.file:
+    path: /mnt/koji/{{ item }}
+    state: directory
+    mode: "0755"
+    owner: apache
+    group: apache
+    setype: public_content_rw_t
+  with_items:
+    - 
+    - packages
+    - repos
+    - work
+    - scratch
+    - repos-dist

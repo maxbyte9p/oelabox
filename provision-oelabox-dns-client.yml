@@ -1,0 +1,5 @@
+---
+- name: Provision Oela Box DNS client
+  ansible.builtin.import_playbook: ansible-dns-management/role-oelabox-dns-client.yml
+  vars:
+    host: dnsclient

@@ -1,0 +1,15 @@
+---
+# Kojira
+- name: Configure kojira
+  ansible.builtin.template:
+    src: etc/kojira/kojira.conf.j2
+    dest: /etc/kojira/kojira.conf
+    mode: '0644'
+  notify:
+    - restart_kojira
+
+- name: Ensure kojira is running
+  ansible.builtin.service:
+    name: kojira
+    state: started
+    enabled: yes

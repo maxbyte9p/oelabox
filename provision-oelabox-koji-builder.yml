@@ -1,0 +1,59 @@
+---
+- name: kojiserver pre-work
+  hosts: kojihub
+  become: yes
+
+  handlers:
+    - import_tasks: ansible-dns-management/handlers/main.yml
+
+  tasks:
+    - name: /etc/hosts
+      ansible.builtin.copy:
+        dest: /etc/hosts
+        content: |
+          127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+          ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+          192.168.121.12 koji.oelabox.local koji
+      notify: restart_networkmanager
+
+    - name: Create ext4 filesystem on /dev/vdb
+      ansible.builtin.filesystem:
+        fstype: ext4
+        dev: /dev/vdb
+
+    - name: Mount /dev/vdb
+      ansible.builtin.mount:
+        fstype: ext4
+        src: /dev/vdb
+        path: /mnt
+        state: mounted
+
+    - name: Create /mnt/mock
+      ansible.builtin.file:
+        path: /mnt/mock
+        state: directory
+        mode: '0755'
+
+    - name: Symlink /var/lib/mock to /mnt/mock
+      ansible.builtin.file:
+        src: /mnt/mock
+        dest: /var/lib/mock
+        state: link
+
+- name: Create Koji Services.
+  ansible.builtin.import_playbook: ansible-oelabox-management/adhoc-kojiservices.yml
+
+- name: Create Koji Keytabs.
+  ansible.builtin.import_playbook: ansible-oelabox-management/adhoc-kojikeytabs.yml
+
+- name: Provision Oela Box Koji Hub.
+  ansible.builtin.import_playbook: ansible-koji-management/role-oelabox-kojihub.yml
+
+- name: Provision Oela Box Koji Builder.
+  ansible.builtin.import_playbook: ansible-koji-management/role-oelabox-kojid.yml
+
+- name: Initialize Koji Ecosystem
+  ansible.builtin.import_playbook: ansible-koji-management/init-oelabox-koji-ecosystem.yml
+  vars:
+    oelakoji_has_password: true
+    oelakoji_password: ThisIsNotMyPassword1!

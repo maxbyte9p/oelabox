@@ -1,0 +1,4 @@
+---
+# No tasks
+- debug: msg="No tasks are provided here. Please import the task as needed in your playbook."
+...

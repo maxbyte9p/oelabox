@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  author: Louis Abel
+  description: Rocky Linux Koji Builder
+  company: Rocky Linux
+  license: MIT
+  min_ansible_version: 2.9
+  platforms:
+    - name: EL
+      versions:
+        - 8
+  galaxy_tags: []
+dependencies: []

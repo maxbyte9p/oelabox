@@ -1,0 +1,116 @@
+---
+# ansible default variables - most variables live here
+koji_hub_packages:
+  - koji
+  - koji-hub
+  - koji-hub-plugins
+  - koji-web
+  - koji-utils
+  - git
+  - gnupg2
+  - python3-paho-mqtt
+  - nfs-utils
+  - mod_ssl
+  - mod_auth_gssapi
+    #  - sigul
+
+koji_default_directories:
+  - packages
+  - repos
+  - work
+  - scratch
+  - repos-dist
+  - compose
+
+koji_db_name: koji
+koji_db_user: koji
+koji_db_pass: ThisIsNotThePassword!
+koji_db_host: localhost
+
+# Web
+koji_sitename: Oela Build Service
+koji_theme: false
+koji_theme_name: rocky
+koji_theme_file: rocky.tar.gz
+koji_web_url: https://koji.oelabox.local/koji
+koji_hub_url: https://koji.oelabox.local/kojihub
+koji_files_url: https://koji.oelabox.local/kojifiles
+koji_web_keytab: /etc/keytabs/koji-web.keytab
+
+# This should be changed before deployment
+koji_hub_secret: cK5XCuzMSXJfgA7yFvXkGwFu
+koji_web_cacert: /etc/pki/tls/certs/ca-bundle.crt
+koji_web_tls_cert: /etc/pki/tls/certs/koji.oelabox.local.crt
+koji_web_tls_key: /etc/pki/tls/private/koji.oelabox.local.key
+
+# Kojira
+koji_kojira: true
+koji_kojira_user: kojira
+koji_kojira_user_kerb: kojira/koji.oelabox.local
+koji_kojira_principal: kojira/koji.oelabox.local@OELABOX.LOCAL
+koji_kojira_keytab: /etc/keytabs/kojira.keytab
+
+# MBS
+koji_mbs: true
+koji_mbs_user: mbs
+koji_mbs_user_kerb: mbs/mbs.oelabox.local
+koji_mbs_principal: mbs/mbs.oelabox.local@OELABOX.LOCAL
+koji_mbs_keytab: /etc/keytabs/mbs.keytab
+
+# GC
+koji_gc_name: garbageman
+koji_gc_keytab: /etc/keytabs/koji-gc.keytab
+koji_gc_principal: koji-gc/koji.oelabox.local@OELABOX.LOCAL
+
+# Sigul
+koji_sigul: true
+koji_sigul_user: sigul
+koji_sigul_user_kerb: sigul/sigul.oelabox.local
+koji_sigul_principal: sigul/sigul.oelabox.local@OELABOX.LOCAL
+
+# Storage
+koji_nfs: true
+koji_mount: /mnt/koji
+koji_nfs_path: nfs.oelabox.local:/export/koji
+
+# Koji Admin
+koji_admin_client: true
+koji_admin_user: koji
+koji_admin_principal: koji@oelabox.local
+koji_admin_localuser: true
+koji_admin_localuser_name: koji
+
+# Hub Settings
+koji_hub_principal: "host/kojihub@OELABOX.LOCAL"
+koji_hub_proxy_principals: "HTTP/{{ inventory_hostname }}@OELABOX.LOCAL"
+koji_hub_keytab: /etc/keytabs/host.keytab
+koji_hub_principal_format: compile/%s@OELABOX.LOCAL
+# This should be sufficient even for LE
+koji_hub_ca: "{{ koji_web_cacert }}"
+
+# Koji FAS Syncing
+# This isn't implemented yet
+koji_fas_sync: false
+koji_fas_url: https://accounts.OELABOX.LOCAL
+
+# Koji Plugins
+koji_hub_plugins: false
+koji_hub_plugins_list:
+  - key_signing
+
+koji_hub_plugin_key_gpg_keyphrase: lol
+koji_hub_plugin_key_gpg_name: testing-signing
+koji_hub_plugin_key_gpg_id: bbe2c108
+koji_hub_plugin_key_build_target: "dist-oela8 dist-oela9"
+koji_hub_plugin_key_testing_tag: dist-oela8-testing
+koji_hub_plugin_key_testing: "True"
+koji_hub_plugin_key_sigul_config: "/etc/koji-hub/sigul.conf"
+
+# Not implemented
+koji_hub_plugin_mqtt_host: mqtt.oelabox.local
+koji_hub_plugin_mqtt_topic: koji
+koji_hub_plugin_mqtt_ca: "{{ koji_hub_ca }}"
+koji_hub_plugin_mqtt_tls_cert: /etc/pki/tls/certs/mqtt.pem
+koji_hub_plugin_mqtt_tls_key: /etc/pki/tls/certs/mqtt.pem
+koji_hub_plugin_mqtt_excluded_tags:
+  - testing-tag

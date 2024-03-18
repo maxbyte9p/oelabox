@@ -1,0 +1,68 @@
+---
+# Create the users on the koji builder
+
+# This user likely isn't used...
+# - name: add mock user
+#   user:
+#     name: mock
+#     uid: 425
+#     state: present
+#     home: /var/lib/mock
+#     createhome: true
+#     system: true
+
+# - name: Fix permissions
+#   file:
+#     state: directory
+#     path: /var/lib/mock
+#     mode: '2775'
+#     owner: root
+#     group: mock
+
+# - name: Create mock ssh directory
+#   file:
+#     state: directory
+#     path: /var/lib/mock/.ssh
+#     mode: '0700'
+#     owner: mock
+#     group: mock
+
+- name: mockbuilder user
+  ansible.builtin.user:
+    name: mockbuilder
+    groups: mock
+
+- name: mockbuilder ssh key
+  ansible.posix.authorized_key:
+    user: mockbuilder
+    key: "{{ mockbuilder_pub_key }}"
+  when: mockbuilder_pub_key is defined
+
+- name: kojibuilder user
+  ansible.builtin.user:
+    name: kojibuilder
+    groups: mock
+
+- name: kojibuilder ssh key
+  ansible.posix.authorized_key:
+    user: kojibuilder
+    key: "{{ kojibuilder_pub_key }}"
+  when: kojibuilder_pub_key is defined
+
+# We need the apache user for NFS
+- name: apache group
+  ansible.builtin.group:
+    name: apache
+    gid: 48
+    system: true
+    state: present
+
+- name: apache user
+  ansible.builtin.user:
+    name: apache
+    uid: 48
+    createhome: false
+    group: apache
+    shell: /sbin/nologin
+    system: true
+    state: present
