@@ -42,6 +42,19 @@ SPDX-License-Identifier: CC-BY-SA-4.0
             -   [Koji Error Example](topics/about-TechnicalAspectsOfOelaBox.md#kojierrorexample)
         -   [Enterprise Linux](topics/about-technicalAspectsOfOelaBox.md#enterpriselinux)
 
+-   Operation of Oela Box
+  -   [Preparation](topics/operation-Preparation.md#preparation)
+      -   [Recommended Hardware Specs](topics/operation-Preparation.md#hardwarespecs)
+      -   [Recommended Virtual Machine Specs](topics/operation-Preparation.md#virtualmachinespecs)
+      -   [OS Compatibility](topics/operation-Preparation.md#oscompat)
+      -   [Automated Setup](topics/operation-Preparation.md#setup)
+  -   [Start, Stop, Destroy, and Reset](topics/operation-StartStopDestroyandReset.md#ssdr)
+      -   [Start](topics/operation-StartStopDestroyandReset.md#start)
+      -   [Stop](topics/operation-StartStopDestroyandReset.md#stop)
+      -   [Destroy](topics/operation-StartStopDestroyandReset.md#destroy)
+      -   [Reset](topics/operation-StartStopDestroyandReset.md#reset)
+
+
 -   DNS Server
 
 -   IPA Server
