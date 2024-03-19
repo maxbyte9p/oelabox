@@ -1,3 +1,7 @@
+<!--
+SPDX-FileCopyrightText: 2024 Maxine Hayes <maxinehayes90@gmail.com>
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
 # Start, Stop, Destroy, and Reset
 
 ## Start
