@@ -53,7 +53,16 @@ SPDX-License-Identifier: CC-BY-SA-4.0
         -   [Stop](topics/operation-StartStopDestroyandReset.md#stop)
         -   [Destroy](topics/operation-StartStopDestroyandReset.md#destroy)
         -   [Reset](topics/operation-StartStopDestroyandReset.md#reset)
-
+    -   [Koji Server](topics/operation-KojiServer.md#kojiserver)
+        -   [Login Through SSH](topics/operation-KojiServer.md#loginssh)
+        -   [Login To The oelakoji User With Kerberos](topics/operation-KojiServer.md#loginoelakoji)
+            -   [Test Koji Kerberos Authentication](topics/operation-KojiServer.md#testkerbauth)
+        -   [About Package Building](topics/operation-KojiServer.md#aboutpkgbuilding)
+            -   [Basic Information About Tags](topics/operation-KojiServer.md#basictaginfo)
+                -   [Dist Tags](topics/operation-KojiServer.md#disttags)
+                -   [Build Tags](topics/operation-KojiServer.md#buildtags)
+            -   [SCM](topics/operation-KojiServer.md#scm)
+            -   [Building A Package](topics/operation-KojiServer.md#buildingapkg)
 
 -   DNS Server
 
