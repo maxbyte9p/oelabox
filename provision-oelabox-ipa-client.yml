@@ -1,15 +1,19 @@
 ---
-- name: Setup DNS for IPA client
-  ansible.builtin.import_playbook: ansible-dns-management/role-oelabox-dns-client.yml
-  vars:
-    host: ipaclient
-    resolv_entries:
-      - entry:
-        nameserver: 192.168.121.11
-        search:
-          - oelabox.local
+- name: Configure IPA client
+  hosts: "{{ host | default(ipaclient) }}"
+  become: true
 
-- name: Provision Oela Box IPA client 
-  ansible.builtin.import_playbook: ansible-ipa-management/role-oelabox-ipa-client.yml
-  vars:
-    host: ipaclient
+  vars_files:
+    - vars/oelabox-ipa/ipa/common.yml
+    - vars/oelabox-ipa/ipa/ipaclient.yml
+
+  pre_tasks:
+    - name: Apply hostname based on inventory name
+      hostname:
+        name: "{{ inventory_hostname }}"
+        use: systemd
+      when: ansible_fqdn != inventory_hostname
+
+  roles:
+    - role: freeipa.ansible_freeipa.ipaclient
+      state: present
