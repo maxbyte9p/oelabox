@@ -1,0 +1,34 @@
+---
+- name: Create our initial users
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  vars_files:
+    - vars/oelabox-ipa/ipa/users.yml
+    - vars/oelabox-ipa/ipa/adminusers.yml
+    - vars/oelabox-ipa/ipa/svcusers.yml
+    - vars/oelabox-ipa/ipa/groups.yml
+    - vars/oelabox-ipa/ipa/ipaprivs.yml
+
+  tasks:
+    - name: "Checking for user variables"
+      ansible.builtin.assert:
+        that:
+          - ipaadmin_password | mandatory
+          - users | mandatory
+          - ipagroups | mandatory
+        success_msg: "Requires variables provided"
+        fail_msg: "We are missing users or ipa admin password"
+
+    - name: "Start users"
+      import_tasks: tasks/oelabox-ipa/import-oelausers.yml
+
+    - name: "Start groups"
+      import_tasks: tasks/oelabox-ipa/import-oelagroups.yml
+
+    - name: "Start sudo for admins"
+      import_tasks: tasks/oelabox-ipa/import-oelasudo.yml
+
+    - name: "Start privileges for services"
+      import_tasks: tasks/oelabox-ipa/import-oelaipaprivs.yml
