@@ -39,10 +39,16 @@ Vagrant.configure("2") do |config|
     ipa.vm.provision "ansible" do |ansible|
       ansible.playbook = "provision-oelabox-dns-client.yml"
       ansible.inventory_path = "inventory.ini"
+      ansible.extra_vars = { host: "dnsclient" }
     end
 
     ipa.vm.provision "ansible" do |ansible|
       ansible.playbook = "provision-oelabox-ipa.yml"
+      ansible.inventory_path = "inventory.ini"
+    end
+
+    ipa.vm.provision "ansible" do |ansible|
+      ansible.playbook = "init-oelabox-ipa-team.yml"
       ansible.inventory_path = "inventory.ini"
     end
   end
@@ -60,13 +66,32 @@ Vagrant.configure("2") do |config|
       v.cpus = 2
     end
 
+    # Add IPA builtin DNS server to resolv.conf, so the IPA client can be provisioned
+    koji.vm.provision "ansible" do |ansible|
+      ansible.playbook = "provision-oelabox-dns-client.yml"
+      ansible.inventory_path = "inventory.ini"
+      ansible.extra_vars = {
+        host: "ipaclient",
+        resolv_entries: [
+              nameserver: "192.168.121.11",
+              search: [ "oelabox.local" ],
+        ],
+      }
+    end
+
     koji.vm.provision "ansible" do |ansible|
       ansible.playbook = "provision-oelabox-ipa-client.yml"
       ansible.inventory_path = "inventory.ini"
+      ansible.extra_vars = { host: "ipaclient" }
     end
 
     koji.vm.provision "ansible" do |ansible|
       ansible.playbook = "provision-oelabox-koji-builder.yml"
+      ansible.inventory_path = "inventory.ini"
+    end
+
+    koji.vm.provision "ansible" do |ansible|
+      ansible.playbook = "init-oelabox-koji-ecosystem.yml"
       ansible.inventory_path = "inventory.ini"
     end
   end
