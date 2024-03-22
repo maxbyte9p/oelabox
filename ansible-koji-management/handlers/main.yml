@@ -1,4 +1,0 @@
----
-- name: enable_crb
-  ansible.builtin.shell: "set -o pipefail && /usr/bin/crb enable"
-  changed_when: "1 != 1"
