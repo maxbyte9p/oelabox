@@ -1,5 +1,22 @@
 ---
-- name: Provision Oela Box DNS client
-  ansible.builtin.import_playbook: ansible-dns-management/role-oelabox-dns-client.yml
-  vars:
-    host: dnsclient
+- name: Configure Oela Box DNS client.
+  hosts: "{{ host | default(dnsclient) }}"
+  become: true
+
+  handlers:
+    - import_tasks: handlers/oelabox-dns/main.yml
+
+  tasks:
+    - name: Use default resolv_entries
+      ansible.builtin.include_vars:
+        file: vars/oelabox-dns/common.yml
+      when: resolv_entries is undefined
+
+    - name: "Checking for user variables"
+      ansible.builtin.assert:
+        that:
+          - resolv_entries | mandatory
+        success_msg: "Required variables provided"
+        fail_msg: "We are missing required information"
+
+    - import_tasks: tasks/oelabox-dns/client-setup.yml
