@@ -1,6 +1,0 @@
----
-- name: Disable NetworkManager DNS processing
-  import_tasks: disable-nm-dns-processing.yml
-
-- name: Setup custom resolv.conf
-  import_tasks: custom-resolv-conf.yml
