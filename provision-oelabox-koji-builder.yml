@@ -1,10 +1,10 @@
 ---
-- name: kojiserver pre-work
+- name: Koji server pre-work
   hosts: kojihub
   become: yes
 
   handlers:
-    - import_tasks: ansible-dns-management/handlers/main.yml
+    - import_tasks: handlers/oelabox-dns/main.yml
 
   tasks:
     - name: /etc/hosts
@@ -40,20 +40,153 @@
         dest: /var/lib/mock
         state: link
 
-- name: Create Koji Services.
-  ansible.builtin.import_playbook: ansible-oelabox-management/adhoc-kojiservices.yml
+- name: Create Koji Services
+  ansible.builtin.import_playbook: init-oelabox-koji-services.yml
 
-- name: Create Koji Keytabs.
-  ansible.builtin.import_playbook: ansible-oelabox-management/adhoc-kojikeytabs.yml
+- name: Create Koji Keytabs
+  ansible.builtin.import_playbook: init-oelabox-koji-keytabs.yml
 
-- name: Provision Oela Box Koji Hub.
-  ansible.builtin.import_playbook: ansible-koji-management/role-oelabox-kojihub.yml
+- name: Configure Koji hub and web server
+  hosts: kojihub
+  become: true
 
-- name: Provision Oela Box Koji Builder.
-  ansible.builtin.import_playbook: ansible-koji-management/role-oelabox-kojid.yml
+  vars_files:
+    - vars/oelabox-koji/common.yml
+    - vars/oelabox-koji/production/kojihub.yml
+    - vars/oelabox-koji/production/koji-common.yml
 
-- name: Initialize Koji Ecosystem
-  ansible.builtin.import_playbook: ansible-koji-management/init-oelabox-koji-ecosystem.yml
-  vars:
-    oelakoji_has_password: true
-    oelakoji_password: ThisIsNotMyPassword1!
+  # This is to try to avoid the handler issue in pre/post tasks
+  handlers:
+    - ansible.builtin.import_tasks: handlers/oelabox-koji/main.yml
+
+  pre_tasks:
+    - name: Check for keytabs - web
+      ansible.builtin.stat:
+        path: /etc/keytabs/koji-web.keytab
+      register: koji_keytab
+      changed_when: "1 != 1"
+
+    - name: Check for keytabs - kojira
+      ansible.builtin.stat:
+        path: /etc/keytabs/kojira.keytab
+      register: kojira_keytab
+      changed_when: "1 != 1"
+
+    - name: Check for keytabs - gc
+      ansible.builtin.stat:
+        path: /etc/keytabs/koji-gc.keytab
+      register: gc_keytab
+      changed_when: "1 != 1"
+
+    - name: Check for keytabs - host
+      ansible.builtin.stat:
+        path: /etc/keytabs/host.keytab
+      register: host_keytab
+      changed_when: "1 != 1"
+
+    - name: Verify keytab
+      ansible.builtin.assert:
+        that:
+          - "koji_keytab.stat.exists"
+          - "kojira_keytab.stat.exists"
+          - "gc_keytab.stat.exists"
+          - "host_keytab.stat.exists"
+        success_msg: "It is likely we have all keytabs"
+        fail_msg: "There are no keytabs. Please build the keytabs."
+
+    - name: Enable the PowerTools repository
+      community.general.ini_file:
+        dest: /etc/yum.repos.d/CentOS-Stream-PowerTools.repo
+        section: powertools
+        option: enabled
+        value: 1
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Enable the EPEL repository
+      ansible.builtin.dnf:
+        name: epel-release
+        state: present
+      tags:
+        - packages
+
+    - name: Install rocky-tools copr
+      ansible.builtin.yum_repository:
+        name: copr:copr.fedorainfracloud.org:nalika:rockylinux-tool
+        description: Copr repo for rockylinux-tools owned by nalika
+        file: copr_repos
+        baseurl: https://download.copr.fedorainfracloud.org/results/nalika/rockylinux-tools/epel-8-$basearch/
+        gpgcheck: true
+        gpgkey: https://download.copr.fedorainfracloud.org/results/nalika/rockylinux-tools/pubkey.gpg
+        enabled: true
+
+  roles:
+    - role: oelabox.ipagetcert
+      state: present
+
+    - role: oelabox.geerlingguy.postgresql
+      state: present
+
+    - role: oelabox.kojihub
+      state: present
+
+  post_tasks:
+    - name: kinit as koji admin using password
+      ansible.builtin.shell: "set -o pipefail && echo \"{{ oelakoji_password }}\" | kinit oelakoji@OELABOX.LOCAL"
+      check_mode: false
+      changed_when: "1 != 1"
+      become: true
+      become_user: koji
+
+    - name: "Configure Koji builder for hub"
+      ktdreyer.koji_ansible.koji_host:
+        koji: koji
+        name: koji.oelabox.local
+        arches: [x86_64,i386]
+        state: enabled
+        channels:
+          - default
+          - createrepo
+      become: true
+      become_user: koji
+
+    - name: "Make sure kojira has repo permision"
+      ktdreyer.koji_ansible.koji_user:
+        koji: koji
+        name: kojira
+        state: enabled
+        permissions: [sign, repo]
+      become: true
+      become_user: koji
+
+- name: Configure Koji builder
+  hosts: kojihub
+  become: true
+
+  vars_files:
+    - vars/oelabox-koji/common.yml
+    - vars/oelabox-koji/production/kojid.yml
+    - vars/oelabox-koji/production/koji-common.yml
+
+  handlers:
+    - ansible.builtin.import_tasks: handlers/oelabox-koji/main.yml
+
+  pre_tasks:
+    - name: Check for keytabs - kojid
+      ansible.builtin.stat:
+        path: /etc/kojid.keytab
+      register: kojid_keytab_check
+      changed_when: "1 != 1"
+
+    - name: Verify keytab
+      ansible.builtin.assert:
+        that:
+          - "kojid_keytab_check.stat.exists"
+        success_msg: "It is likely we have all keytabs"
+        fail_msg: "There are no keytabs. Please build the keytabs."
+
+  roles:
+    - role: oelabox.kojid
+      state: present
+...
