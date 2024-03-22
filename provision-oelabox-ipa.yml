@@ -1,10 +1,10 @@
 ---
-- name: ipaserver pre-work
+- name: IPA server pre-work
   hosts: ipaserver
   become: yes
 
   handlers:
-    - import_tasks: ansible-dns-management/handlers/main.yml
+    - import_tasks: handlers/oelabox-dns/main.yml
 
   tasks:
     - name: /etc/hosts
@@ -17,10 +17,30 @@
       notify: restart_networkmanager
 
 - name: Provision Oela Box IPA server
-  ansible.builtin.import_playbook: ansible-ipa-management/role-oelabox-ipa.yml
+  hosts: ipaserver
+  become: true
 
-- name: Initialize IPA Team
-  ansible.builtin.import_playbook: ansible-ipa-management/init-oelabox-ipa-team.yml
-  vars:
-    ipa_binder_name: binder
-    ipa_binder_password: freeloader
+  vars_files:
+    - vars/oelabox-ipa/ipa/common.yml
+    - vars/oelabox-ipa/ipa/ipaserver.yml
+
+  handlers:
+    - import_tasks: handlers/oelabox-ipa/main.yml
+
+  pre_tasks:
+    - name: Perform domain pre-work
+      ansible.builtin.import_tasks: tasks/oelabox-ipa/domain-prework.yml
+
+  roles:
+    - role: freeipa.ansible_freeipa.ipaserver
+      state: present
+
+  post_tasks:
+    - name: Turn on reverse zone syncing
+      freeipa.ansible_freeipa.ipadnsconfig:
+        ipaadmin_password: '{{ ipaadmin_password }}'
+        allow_sync_ptr: true
+
+    - name: Configure recursion for private nets
+      ansible.builtin.import_tasks: tasks/oelabox-ipa/dns-ext.yml
+...
