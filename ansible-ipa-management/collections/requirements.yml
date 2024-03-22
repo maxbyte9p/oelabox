@@ -1,7 +1,0 @@
----
-# Collections
-collections:
-  - name: freeipa.ansible_freeipa
-  - name: community.general
-  - name: ansible.posix
-...
