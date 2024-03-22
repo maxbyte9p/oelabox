@@ -1,3 +1,13 @@
 ---
-- name: Provision Oela Box DNS server
-  ansible.builtin.import_playbook: ansible-dns-management/role-oelabox-dns.yml
+- name: Configure Oela Box DNS Server
+  hosts: dnsserver
+  become: yes
+
+  vars_files:
+    - vars/oelabox-dns/common.yml
+
+  handlers:
+    - import_tasks: handlers/oelabox-dns/main.yml
+
+  tasks:
+    - import_tasks: tasks/oelabox-dns/server-setup.yml
