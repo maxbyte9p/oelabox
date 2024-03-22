@@ -1,0 +1,6 @@
+---
+ipa_trusted_nets:
+  - localnets
+  - localhost
+  - 10.0.0.0/8
+...

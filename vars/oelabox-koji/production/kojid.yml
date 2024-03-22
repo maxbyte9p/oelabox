@@ -1,0 +1,17 @@
+---
+# vars for kojid
+
+kojid_vendor: Oela
+kojid_packager: infrastructure@oelabox.local
+kojid_distribution: Oela
+# These three should probably be specified by special vars
+kojid_web_url: https://koji.oelabox.local/koji
+kojid_hub_url: https://koji.oelabox.local/kojihub
+kojid_files_url: https://koji.oelabox.local/kojifiles
+
+#kojid_ca_bundle: /etc/pki/tls/certs/ca-bundle.crt
+koji_ca_bundle: /etc/pki/tls/certs/koji.oelabox.local.crt
+kojid_keytab: /etc/kojid.keytab
+kojid_smtp_host: smtp.oelabox.local
+kojid_allowed_scm: "github.com:/openela-main/*:off:/usr/bin/getsrc.sh"
+...

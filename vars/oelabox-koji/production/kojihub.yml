@@ -1,0 +1,122 @@
+---
+# koji hub settings
+# This should be the front-facing URL of koji
+koji_url_name: koji.oelabox.local
+
+# Use an internal CA (IPA)
+koji_internal_ca: true
+
+# Use postgresql on this machine rather than managed service
+koji_postgresql_vm: true
+
+# Database settings
+koji_db_name: koji
+koji_db_user: koji
+# This will need to change when koji_postgresql_vm is false
+koji_db_host: "{{ ansible_fqdn }}"
+
+koji_web_url: "https://{{ koji_url_name }}/koji"
+koji_hub_url: "https://{{ koji_url_name }}/kojihub"
+koji_files_url: "https://{{ koji_url_name }}/kojifiles"
+
+# The IPA internal CA is combined with the others
+# Change before deployment or store in vault
+koji_hub_secret: cK5XCuzMSXJfgA7yFvXkGwFu
+#koji_web_cacert: /etc/pki/tls/certs/ca-bundle.crt
+#koji_web_cacert: /etc/pki/tls/certs/koji.oelabox.local.crt
+koji_web_cacert: /etc/ipa/ca.crt
+koji_web_tls_cert: "/etc/pki/tls/certs/{{ ansible_fqdn }}.crt"
+koji_web_tls_key: "/etc/pki/tls/private/{{ ansible_fqdn }}.key"
+
+# Kojira
+koji_kojira: true
+koji_kojira_user: kojira
+koji_kojira_user_kerb: kojira/koji.oelabox.local
+koji_kojira_principal: kojira/koji.oelabox.local@OELABOX.LOCAL
+koji_kojira_keytab: /etc/keytabs/kojira.keytab
+
+# MBS
+koji_mbs: true
+koji_mbs_user: mbs
+koji_mbs_user_kerb: mbs/mbs.oelabox.local
+koji_mbs_principal: mbs/mbs.oelabox.local@OELABOX.LOCAL
+koji_mbs_keytab: /etc/keytabs/mbs.keytab
+
+# GC
+koji_gc_keytab: /etc/keytabs/koji-gc.keytab
+koji_gc_principal: koji-gc/koji.oelabox.local@OELABOX.LOCAL
+
+# Sigul
+koji_sigul: true
+koji_sigul_user: sigul
+koji_sigul_user_kerb: sigul/sigul.oelabox.local
+koji_sigul_principal: sigul/sigul.oelabox.local@OELABOX.LOCAL
+
+# NFS? We need a place.
+koji_nfs: false
+koji_mount: /mnt/koji
+koji_nfs_path: nfs.oelabox.local:/export/koji
+
+# Koji Admin Settings
+koji_admin_client: true
+koji_admin_user: oelakoji
+koji_admin_principal: oelakoji@OELABOX.LOCAL
+koji_admin_localuser: true
+koji_admin_localuser_name: koji
+
+# Hub Settings
+koji_hub_principal: "host/kojihub@OELABOX.LOCAL"
+koji_hub_proxy_principals: "HTTP/{{ inventory_hostname }}@OELABOX.LOCAL"
+koji_hub_keytab: /etc/keytabs/host.keytab
+koji_hub_principal_format: compile/%s@OELABOX.LOCAL
+# This should be sufficient even for LE
+koji_hub_ca: "{{ koji_web_cacert }}"
+
+# Koji FAS Syncing
+# This isn't implemented yet in the role
+koji_fas_sync: false
+koji_fas_url: https://accounts.oelabox.local
+
+# IPA Certs if Required
+ipa_getcert_requested_hostnames:
+  - name: "{{ ansible_fqdn }}"
+    owner: apache
+    key_location: "{{ koji_web_tls_key }}"
+    cert_location: "{{ koji_web_tls_cert }}"
+    postcmd: "/bin/systemctl reload httpd"
+
+# postgresql vars
+postgresql_restarted_state: "restarted"
+postgresql_python_library: python3-psycopg2
+postgresql_user: postgres
+postgresql_group: postgres
+postgresql_hba_entries:
+  - type: local
+    database: koji
+    user: koji
+    auth_method: trust
+  - type: local
+    database: all
+    user: postgres
+    auth_method: peer
+  - type: host
+    database: koji
+    user: koji
+    address: '192.168.121.0/24'
+    auth_method: md5
+
+postgresql_databases:
+  - name: "{{ koji_db_name }}"
+    owner: "{{ koji_db_user }}"
+
+postgresql_users:
+  - name: "{{ koji_db_user }}"
+    password: "{{ koji_db_pass }}"
+    role_attr_flags: "NOCREATEDB,NOSUPERUSER,NOCREATEROLE"
+    db: "{{ koji_db_name }}"
+    state: present
+
+postgresql_global_config_options:
+  - option: listen_addresses
+    value: '*'
+...

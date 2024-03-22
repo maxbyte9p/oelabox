@@ -1,0 +1,10 @@
+---
+users:
+  - name: oelauser
+    first: Oela
+    last: User
+    email: oelauser@oelabox.local
+    password: ThisIsNotMyPassword1!
+    title: Oela Box User
+    loginshell: /bin/bash
+...
