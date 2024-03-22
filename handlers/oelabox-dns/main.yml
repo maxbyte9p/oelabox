@@ -1,0 +1,10 @@
+---
+- name: restart_named
+  ansible.builtin.service:
+    name: named
+    state: restarted
+
+- name: restart_networkmanager
+  ansible.builtin.service:
+    name: NetworkManager
+    state: restarted
