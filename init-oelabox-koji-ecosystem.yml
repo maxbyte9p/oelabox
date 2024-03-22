@@ -1,0 +1,7 @@
+- name: Initialize Koji ecosystem
+  hosts: "kojihub"
+  become: true
+
+  tasks:
+    - name: Build out relevent accounts and components
+      import_tasks: tasks/oelabox-koji/init-koji.yml
