@@ -1,0 +1,19 @@
+---
+- name: Configure ACL for nets
+  ansible.builtin.template:
+    src: "templates/oelabox-ipa/etc/named/ipa-ext.conf"
+    dest: "/etc/named/ipa-ext.conf"
+    owner: root
+    group: named
+    mode: '0640'
+  notify: restart_named
+
+- name: Turn on recursion for nets
+  ansible.builtin.template:
+    src: "templates/oelabox-ipa/etc/named/ipa-options-ext.conf"
+    dest: "/etc/named/ipa-options-ext.conf"
+    owner: root
+    group: named
+    mode: '0640'
+  notify: restart_named
+...

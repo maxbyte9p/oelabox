@@ -1,0 +1,53 @@
+---
+- name: Install bind and bind-utils
+  ansible.builtin.dnf:
+    name:
+      - bind
+      - bind-utils
+    state: present
+
+- name: Enable and start named
+  ansible.builtin.service:
+    name: named
+    state: started
+    enabled: yes
+
+- name: "/var/named/oelabox.local.zone"
+  ansible.builtin.copy:
+    src: files/oelabox-dns/oelabox.local.zone
+    dest: /var/named/oelabox.local.zone
+    owner: root
+    group: named
+    mode: '0640'
+  notify:
+    - restart_named
+
+- name: "/var/named/121.168.192.in-addr.arpa.zone"
+  ansible.builtin.copy:
+    src: files/oelabox-dns/121.168.192.in-addr.arpa.zone
+    dest: /var/named/121.168.192.in-addr.arpa.zone
+    owner: root
+    group: named
+    mode: '0640'
+  notify:
+    - restart_named
+
+- name: "/etc/named.conf"
+  ansible.builtin.copy:
+    src: files/oelabox-dns/named.conf
+    dest: /etc/named.conf
+    owner: root
+    group: named
+    mode: '0640'
+  notify:
+    - restart_named
+
+- import_tasks: disable-nm-dns-processing.yml
+
+- import_tasks: custom-resolv-conf.yml
+
+- name: Open DNS port
+  ansible.builtin.firewalld:
+    service: dns
+    permanent: true
+    state: enabled

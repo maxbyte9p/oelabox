@@ -1,0 +1,10 @@
+- name: Custom resolv.conf
+  ansible.builtin.template:
+    src: templates/oelabox-dns/resolv.conf.j2
+    dest: /etc/resolv.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - restart_networkmanager
+

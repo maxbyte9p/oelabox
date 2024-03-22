@@ -1,0 +1,4 @@
+---
+- import_tasks: disable-nm-dns-processing.yml
+
+- import_tasks: custom-resolv-conf.yml

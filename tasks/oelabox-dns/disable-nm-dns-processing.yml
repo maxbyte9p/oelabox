@@ -1,0 +1,15 @@
+---
+- name: Ensure 'dns=none' is set for Network Manager
+  community.general.ini_file:
+    path: /etc/NetworkManager/NetworkManager.conf
+    state: present
+    no_extra_spaces: true
+    section: main
+    option: dns
+    value: none
+    owner: root
+    group: root
+    mode: '0644'
+    backup: true
+  notify:
+    - restart_networkmanager
