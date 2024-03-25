@@ -25,7 +25,7 @@ We can also use a one liner in scripts or Ansible playbooks to login. This works
 echo 'ThisIsNotMyPassword1!' | kinit oelakoji
 ```
 
-In fact a oneliner like this is used in "init-koji.yml" located in ansible-koji-management/tasks. This is the tasks file that the "init-oelabox-koji-ecosystem.yml" playbook uses to initialize the Koji instance running on the Koji server.
+In fact a oneliner like this is used in "init-koji.yml" located in tasks/oelabox-koji. This is the tasks file that the "init-oelabox-koji-ecosystem.yml" playbook uses to initialize the Koji instance running on the Koji server.
 
 ```
 - name: kinit as koji admin using password
@@ -34,7 +34,6 @@ In fact a oneliner like this is used in "init-koji.yml" located in ansible-koji-
   changed_when: "1 != 1"
   become: true
   become_user: koji
-  when: oelakoji_has_password | bool
 ```
 
 ## Test Koji Kerberos Authentication
