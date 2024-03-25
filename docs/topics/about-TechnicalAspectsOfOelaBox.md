@@ -44,7 +44,9 @@ Our Koji server is connected to our IPA server as a client. This allows us to us
 ## Ansible
 Ansible is a crucial automation tool used in Oela Box. It is responsible for provisioning the virtual machines that bring up our infrastructure. Ansible allows us to easily provision virtual machines in a manner which is reproducible and indempotent. Ansible gives us a lot of information and does a lot of checks during playbook runs. Ansible is also easily extendable through modules.
 
-### Provisioning Playbooks
+### Types of Playbooks and Task Files
+
+#### Provisioning Playbooks
 There are several Ansible playbooks for provisioning the virtual machines. Provisioning playbooks follow a specific naming scheme which helps identify each playbook.
 
 ```
@@ -53,50 +55,26 @@ provision-oelabox-xxxx.yml
 
 As of writing there are 5 different provisioning playbooks. We can read the Vagrant file to see which VMs utilize which playbooks.
 
-### Directories Labelled "ansible-xxxx-management"
-Some readers may have already noticed there are directories containing various Ansible playbooks, roles, tasks, and variable files. Some of these files follow specific naming schemes.
+#### Initializer Playbooks
+Initializer playbooks are playbooks for initializing services during or after virtual machine provisioning. Initializer playbooks follow a specific naming scheme which helps identify each playbook.
 
-The naming scheme for these directories are like so.
 ```
-ansible-xxxx-management
+init-oelabox-xxxx-xxxx.yml
 ```
 
-This naming scheme and directory structure helps with organization of various components for the provisioning playbooks. It is also a nod to naming scheme used by Rocky Linux. [ansible-ipa-management](https://git.resf.org/infrastructure/ansible-ipa-management) being a primary example of this.
+Initializer Playbooks do not do any provisioning. They configure and setup already provisioned services. They are meant to be included in the Vagrant file after provisioning playbooks, but if need be can be imported into a provisioning playbook. 
 
-A lot of the Ansible code is borrowed from Rocky Linux, so following their naming scheme made development easier.
+#### Import Task Files
+Import task files are task files meant to be imported by initializer playbooks. Import task files follow a specific naming scheme which helps identify each task file.
 
-#### Inside These Directories
-As mentioned earlier the ansible-xxxx-management directories contain various playbooks, roles, tasks and variable files. In the top level we will commonly see yml files with 4 different naming schemes.
+```
+import-xxxx.yml
+```
 
-##### role-oelabox-xxxx.yml
-role-oelabox-xxxx.yml is the naming scheme for playbooks which act as roles, but share many of the same components. They are imported into provision-oelabox-xxxx.yml playbooks and do a lot of the heavy lifting for provisioning the virtual machines.
+The purpose of import task files is to essentially organize the various tasks an initializer playbook runs. They can also be used in other initializer playbooks if the user wants to write a version of an initializer playbook that suites their needs better.
 
-##### init-oelabox-xxxx.yml
-init-oelabox-xxxx.yml is the naming scheme for playbooks which also act like roles. Their function is similar to the role-oelabox-xxxx.yml playbooks. I say "similiar" due to the fact they serve a different purpose. Instead of doing any provisioning they instead initialize the already provisioned services. They are ran after the role-oelabox-xxxx.yml playbooks.
-
-###### An Example of init-oelabox-xxxx.yml
-A good example of their function is the init-oelabox-ipa-team.yml playbook found in the ansible-ipa-management directory. This playbook initializes the users and groups for the IPA server. Reading through it we can see it does not setup any new services. It just configures the already existing IPA server for us.
-
-##### import-xxxx.yml
-import-xxxx.yml is the naming scheme for task files which are imported by an init-oelabox-xxxx.yml playbook. Their purpose is to essentially organize the various tasks an init-oelabox-xxxx.yml playbook runs. They can also be used in other init-oelabox-xxxx.yml playbooks if the user wants to write a version of an init-oelabox-xxxx.yml playbook that suites their needs better.
-
-##### adhoc-xxxx.yml
-adhoc-xxxx.yml is the naming scheme for playbooks that serve a singular purpose and are seldom used. They are not used for provisioning or initialization. They are instead used to make management of the virtual machines easier.
-
-###### An Example of adhoc-xxxx.yml
-Once again we are looking at a file from the ansible-ipa-management directory. The adhoc-ipagetkeytab.yml playbook is a great example.
-
-The adhoc-ipagetkeytab.yml playbook servers only one purpose. That purpose is to grab a keytab for an existing service. It is standalone and can be used on any virtual machine which is an IPA client.
-
-A note about this playbook is that the user is required to have the same SSH key on both the IPA server and target host. Ansible must also be told to authenticate with this SSH key.
-
-##### Sub-directories
-The most common sub directories found are collections, handlers, tasks, templates, vars, and roles. These are the standard directories Ansible knows about. If you have a basic understanding of Ansible you'll know what they're for and how they work. There is however a specific hack Oela Box does for the roles directory. The roles directory is a symlink to the ../roles directory. This is just to keep the roles together nice and neat instead of being all over the place. 
-
-### roles Directory
-The roles directory as mentioned in a previous section has symlinks pointing to it from inside the ansible-xxxx-management directories. This directory is only symlinked where it is needed.
-
-Oela Box includes some roles used by the various Ansible playbooks. The roles included with Oela Box have a naming scheme to help identify them when external roles are added.
+### Roles Included With Oela Box
+Oela Box includes some roles used by some of the Ansible playbooks. The roles included with Oela Box have a naming scheme to help identify them when external roles are added.
 
 ```
 oelabox.xxxx
