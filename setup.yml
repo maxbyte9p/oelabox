@@ -1,7 +1,7 @@
 ---
 - hosts: localhost
   connection: local
-  gather_facts: no
+  gather_facts: yes
   become: yes
 
   vars:
@@ -23,7 +23,7 @@
         name: vagrant
         state: present
 
-    - name: Enable the CRB repository
+    - name: Enable the CRB repository (Rocky)
       community.general.ini_file:
         dest: /etc/yum.repos.d/rocky.repo
         section: crb
@@ -32,6 +32,18 @@
         owner: root
         group: root
         mode: '0644'
+      when: ansible_distribution == "Rocky"
+
+    - name: Enable the CRB repository (Oracle)
+      community.general.ini_file:
+        dest: /etc/yum.repos.d/oracle-linux-ol9.repo
+        section: ol9_codeready_builder
+        option: enabled
+        value: 1
+        owner: root
+        group: root
+        mode: '0644'
+      when: ansible_distribution == "OracleLinux"
 
     - name: Install libvirt-devel and libvirt
       ansible.builtin.dnf:
@@ -67,14 +79,6 @@
         name: '@Virtualization Host'
         state: present
 
-#    - name: Create "oelabox" user
-#      ansible.builtin.user:
-#        name: oelabox
-#        comment: Oela Box
-#        groups: libvirt
-#        password: freeloader
-#        state: present
-
     - name: Add invoking user to the libvirt group
       ansible.builtin.user:
         name: "{{ invoking_user }}"
@@ -82,19 +86,19 @@
         append: yes
 
     - name: Install vagrant-libvirt plugin
-      ansible.builtin.shell: "set -o pipefail && vagrant plugin install vagrant-libvirt"
+      ansible.builtin.shell: "vagrant plugin install vagrant-libvirt"
       changed_when: "1 != 1"
       become: true
       become_user: "{{ invoking_user }}"
 
     - name: Add Rocky Linux 9.2 box to Vagrant
-      ansible.builtin.shell: "set -o pipefail && vagrant box add --name rockylinux/9 -f {{ rockybox }}"
+      ansible.builtin.shell: "vagrant box add --name rockylinux/9 -f {{ rockybox }}"
       changed_when: "1 != 1"
       become: true
       become_user: "{{ invoking_user }}"
 
     - name: Add CentOS Stream 8 box to Vagrant
-      ansible.builtin.shell: "set -o pipefail && vagrant box add --name centos/stream8 -f {{ centosbox }}"
+      ansible.builtin.shell: "vagrant box add --name centos/stream8 -f {{ centosbox }}"
       changed_when: "1 != 1"
       become: true
       become_user: "{{ invoking_user }}"
@@ -113,14 +117,36 @@
           192.168.121.12 koji.oelabox.local
 
     - name: Install freeipa.ansible_freeipa collection
-      ansible.builtin.shell: "set -o pipefail && ansible-galaxy collection install freeipa.ansible_freeipa"
+      ansible.builtin.shell: "ansible-galaxy collection install freeipa.ansible_freeipa"
+      changed_when: "1 != 1"
+      become: true
+      become_user: "{{ invoking_user }}"
+
+    - name: Install git if it is not installed (by some means)
+      ansible.builtin.dnf:
+        name: git
+        state: present
+
+    - name: Install pandoc
+      ansible.builtin.dnf:
+        name: pandoc
+        state: present
+
+    - name: Clone ktdreyer.koji_ansible collection
+      ansible.builtin.git:
+        repo: 'https://github.com/ktdreyer/koji-ansible'
+        dest: /tmp/koji-ansible
+      become: true
+      become_user: "{{ invoking_user }}"
+
+    - name: Build ktdreyer.koji_ansible collection
+      ansible.builtin.shell: "/tmp/koji-ansible/build-collection"
       changed_when: "1 != 1"
       become: true
       become_user: "{{ invoking_user }}"
 
     - name: Install ktdreyer.koji_ansible collection
-      ansible.builtin.shell: "set -o pipefail && ansible-galaxy collection install ktdreyer.koji_ansible"
+      ansible.builtin.shell: "ansible-galaxy collection install /tmp/koji-ansible/_build"
       changed_when: "1 != 1"
       become: true
       become_user: "{{ invoking_user }}"
-
