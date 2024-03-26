@@ -35,9 +35,9 @@ I recommend 10 GB of dedicated memory as that is the absolute bare minimum for r
 I recommend 200 GB of dedicated storage space for the same reason as before in Recommended Hardware Specs.
 
 ## OS Compatibility
-A Rocky Linux 9.3 minimal install is recommended.
+A Rocky Linux 9.3 or Oracle Linux 9.3 install is recommended.
 
-Oela Box has been thoroughly tested on a Rocky Linux 9.3 minimal install. All parts of Oela Box are ensured to work on Rocky Linux 9.3.
+Oela Box has been thoroughly tested on Rocky Linux 9.3 minimal and Oracle Linux 9.3 minimal. All parts of Oela Box are ensured to work on Rocky Linux 9.3 and Oracle Linux 9.3.
 
 Oela Box is likely to work on other Enterprise Linux distributions with minimal modification, but this is not guaranteed and has not been thoroughly tested. However I still want to support the entire Enterprise Linux ecosystem.
 
