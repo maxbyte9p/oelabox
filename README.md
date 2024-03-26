@@ -5,7 +5,7 @@ Oela Box is a infrstructure in a box designed for Enterprise Linux development. 
 If you would like to learn more about Oela Box documentation can be found in the "docs" directory. As of right now the documentation is incomplete, but complete enough to help you understand how Oela Box works.
 
 # Getting Started
-To Get started with Oela Box I recommend having either a dedicated machine or virtual machine running Rocky Linux 9.3 Minimal.
+To Get started with Oela Box I recommend having either a dedicated machine or virtual machine running either Rocky Linux 9.3 Minimal or Oracle Linux 9.3 Minimal.
 
 ## Recommended Specs
 Recommended specs are based on my workstation specs.
