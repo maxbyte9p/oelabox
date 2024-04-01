@@ -9,7 +9,7 @@
 - name: Load schema to postgresql database
   community.general.postgresql_db:
     name: "{{ koji_db_name }}"
-    target: /usr/share/doc/koji/docs/schema.sql
+    target: /usr/share/koji/schema.sql
     owner: "{{ koji_db_user }}"
     state: restore
     login_host: "{{ koji_db_host }}"
