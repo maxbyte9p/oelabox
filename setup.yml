@@ -6,7 +6,7 @@
 
   vars:
     invoking_user: "{{ lookup('ansible.builtin.env', 'SUDO_USER', default=lookup('ansible.builtin.env', 'USER')) }}"
-    rockybox: https://dl.rockylinux.org/vault/rocky/9.2/images/x86_64/Rocky-9-Vagrant-Libvirt-9.2-20230513.0.x86_64.box
+    rockybox: https://dl.rockylinux.org/pub/rocky/9.3/images/x86_64/Rocky-9-Vagrant-Libvirt-9.3-20231113.0.x86_64.box
     centosbox: https://cloud.centos.org/centos/8-stream/x86_64/images/CentOS-Stream-Vagrant-8-20240101.0.x86_64.vagrant-libvirt.box
 
   tasks:
