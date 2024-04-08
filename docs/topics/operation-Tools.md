@@ -39,10 +39,12 @@ We should see an output like the following.
 ===Oela Importer=============================================================================
 ---Import------------------------------------------------------------------------------------
   Repo: libguestfs                                                                           
-  Branch Matches: ['el8']                                                                      Import IDs: [30]                            
+  Branch Matches: ['el8']                                                                   
+  Import IDs: [30]                            
 ---Import------------------------------------------------------------------------------------
   Repo: cockpit                                                                              
-  Branch Matches: ['el8']                                                                      Import IDs: [31]                            
+  Branch Matches: ['el8']                                                                   
+  Import IDs: [31]                            
 ---Import------------------------------------------------------------------------------------
   Repo: abrt                                  
   Branch Matches: ['el8']                                                                    
@@ -84,7 +86,8 @@ We should see an output like the following.
   Branch Matches: ['el8']                                                                    
   Import IDs: [55]                                                                           
 ---Import------------------------------------------------------------------------------------  Repo: abrt
-  Branch Matches: ['el8']                                                                      Import IDs: [56]
+  Branch Matches: ['el8']                                                                   
+  Import IDs: [56]
 ...
 ```
 
