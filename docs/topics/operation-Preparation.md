@@ -44,7 +44,7 @@ Oela Box is likely to work on other Enterprise Linux distributions with minimal 
 ## Automated Setup
 Setup of Oela Box is automated using a shell script called "setup.sh" and an Ansible playbook called "setup.yml".
 
-The "setup.sh" shell script bootstraps a Rocky Linux 9.3 install to be able to run the "setup.yml" Ansible playbook. Once the system is capable of running the playbook the script then runs the playbook for us.
+The "setup.sh" shell script bootstraps a Rocky Linux 9.3 or Oracle Linux 9.3 install to be able to run the "setup.yml" Ansible playbook. Once the system is capable of running the playbook the script then runs the playbook for us.
 
 The "setup.yml" playbook installs all the required dependencies and configures the system for Oela Box.
 
