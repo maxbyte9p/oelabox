@@ -1,10 +1,12 @@
-# oela-koji tools
+# oelabox-koji tools
 
-Right now the tools directory doesn't hold anything other than Oela Importer and a script to install its dependencies.
+~~Right now the tools directory doesn't hold anything other than Oela Importer and a script to install its dependencies.
 
 The vagrant virtual machines also do not share the Oela Box root directory yet. There's a bug with that where it gets a little quirky. Using NFS for synced folders also doesn't quite work. I have tried to skirt around this with the vagrant-sshfs plugin, but that seems to make the virtual machines unstable for some reason. I've had to reset the VMs countless times during the development of Oela Importer for Oela Box. (The VMs just stopped working again while writing this. I think no more vagrant-sshfs from now on.)
 
-Anyway, if you want to run Oela Importer on the koji server it needs to be copied over. I recommend using the vagrant-scp plugin for this as I've had a good experience with it before. The deps.sh script also needs to be copied over and ran to install the required dependencies.
+Anyway, if you want to run Oela Importer on the koji server it needs to be copied over. I recommend using the vagrant-scp plugin for this as I've had a good experience with it before. The deps.sh script also needs to be copied over and ran to install the required dependencies.~~
+
+None of the above matters anymore. Any and all tools should be automatically installed from now on.
 
 To run Oela Importer after following the above steps (don't forget to ssh into the koji server):
 ```
