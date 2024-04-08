@@ -1,0 +1,10 @@
+---
+- name: Setup Koji tools
+  hosts: kojihub
+  become: true
+
+  tasks:
+    - name: Install Koji tools
+      ansible.builtin.include_tasks:
+        file: "{{ item }}"
+      with_items: "{{'./tools/oelabox-koji/*/install.yml' | fileglob}}"
