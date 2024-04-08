@@ -52,7 +52,7 @@ We should see an output like the following.
 ...
 ```
 
-Something import to note is Import IDs correspond to the task IDs in Koji. This is so we can note down the import IDs and check on them later using the Koji cli commands if we choose to.
+Something important to note is Import IDs correspond to the task IDs in Koji. This is so we can note down the import IDs and check on them later using the Koji cli commands if we choose to.
 
 This command can take hours to finish due to it processing as of writing 3,000 git repositories from 'openela-main'. However it might be fun to gaze at the pretty output of Oela Importer and watch as it takes on the monumental task.
 
