@@ -7,6 +7,10 @@ Vagrant.configure("2") do |config|
   config.vm.box = "rockylinux/9"
   config.vm.box_check_update = false
   config.vm.synced_folder '.', '/vagrant', disabled: true
+  #config.vm.provider :libvirt do |v|
+  #  v.memorybacking :access, :mode => "shared"
+  #end
+  #config.vm.synced_folder "./", "/vagrant", type: "virtiofs"
   #config.vm.network "forwarded_port", guest: 22, host: 22
   config.ssh.forward_agent = true
 
@@ -94,5 +98,10 @@ Vagrant.configure("2") do |config|
       ansible.playbook = "init-oelabox-koji-ecosystem.yml"
       ansible.inventory_path = "inventory.ini"
     end
+  end
+
+  config.vm.provision "tools", type: "ansible" do |t|
+    t.playbook = "setup-oelabox-tools.yml"
+    t.inventory_path = "inventory.ini"
   end
 end
