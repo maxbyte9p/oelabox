@@ -57,6 +57,13 @@ SPDX-License-Identifier: CC-BY-SA-4.0
                 -   [Build Tags](topics/operation-KojiServer.md#buildtags)
             -   [SCM](topics/operation-KojiServer.md#scm)
             -   [Building A Package](topics/operation-KojiServer.md#buildingapkg)
+    -   [Tools](topics/operation-Tools.md#tools)
+        -   [Oela Box Koji](topics/operation-Tools.md#oelabox-koji)
+            -   [Oela Importer](topics/operation-Tools.md#oelaimporter)
+                -   [Basic Usage](topics/operation-Tools.md#basicusage)
+                -   [Regex Mode](topics/operation-Tools.md#regmod)
+                -   [Machine Readable Mode](topics/operation-Tools.md#machmod)
+                -   [Chunking](topics/operation-Tools.md#chunking)
 
 -   DNS Server
 
