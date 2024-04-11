@@ -25,6 +25,15 @@ def get_organization(session: Github, org: str) -> Organization:
 def get_raw_repos(org: Organization, visibility: str = 'public') -> PaginatedList:
     return org.get_repos(visibility)
 
+# I wanted to avoid using a try except statement, but it's the best way to handle this.
+# I didn't want to deal with the exception because if it fails it won't cause any real harm.
+# Returning None always makes more sense since it can be easily processed. Idk I'm weird I guess
+def get_raw_repo(org: Organization, reponame: str) -> Union[Repository, None]:
+    try:
+        return org.get_repo(reponame)
+    except:
+        return None
+
 # I don't like how dirty this is. Could be made way easier and neater.
 def create_koji_session(config_name: str) -> koji.ClientSession:
     koji_config = koji.read_config(config_name)
@@ -114,9 +123,13 @@ def chunk(s: str) -> slice:
     return slice(*tuple(int(i) for i in s.split(":")[:2]))
 
 # Slice iterable into a chunk if a slice value is provided.
-# If a bool or falsey value is provided return the unchanged Iterable.
-def chunkify(i: Iterable, s: Union[slice, bool]) -> Iterable:
+# If None is provided return the unchanged Iterable.
+def chunkify(i: Iterable, s: Union[slice, None]) -> Iterable:
     return i[s] if s else i
+
+#def run_import(r: Repository, pb: str, regmod: bool, machmod: bool, user: str, pd: str, ksess: Koji.ClientSession):
+
+    
 
 def main():
     parser = argparse.ArgumentParser(
@@ -130,7 +143,8 @@ def main():
     parser.add_argument('-t', '--ghtoken', default="", help='Authenticate with Github using OAuth token.')
     parser.add_argument('-r', '--regmod', action='store_true', help='Enable regex mode for branch matching. Off by default.')
     parser.add_argument('-m', '--machmod', action='store_true', help='Enable machine output mode for parsing by other programs.')
-    parser.add_argument('-c', '--chunk', default=False, type=chunk, help='Only import a chunk of repositories. Import all by default.')
+    parser.add_argument('-c', '--chunk', default=None, type=chunk, help='Only import a chunk of repositories. Import all by default.')
+    parser.add_argument('-o', '--only', default=None, help='Only import a specific repository.')
     parser.add_argument('-u', '--user', required=True, help='Authenticated kerberos user.')
     parser.add_argument('-s', '--scm', required=True, help='SCM to pull from')
     parser.add_argument('-d', '--dist', required=True, help='Dist to import to')
@@ -148,7 +162,22 @@ def main():
 
     org = get_organization(session, args.scm)
 
-    repos = get_raw_repos(org)
+    # Very bolted on code here. Basically makes it so nothing needs to be changed in order to import a specific repository.
+    # If the "-o" option is used then run get_raw_repo else fallback to default of get_raw_repos
+    repos = get_raw_repo(org, args.only) if args.only else get_raw_repos(org)
+
+    # These 2 if statements are also very bolted on. Basically we exit if for example the bash repo didn't exist.
+    # If a repo didn't exist nothing really failed. It just didn't exist. 
+    # Processing instead of throwing an error is also in line with how branch matching is handled.
+    # If a repo doesn't have the branch just filter it out! No reason to stop execution.
+    if repos is None:
+        sys.exit()
+    
+    # Because Oela Importer was initially designed for mass imports this just makes the single repository returned from get_raw_repo into an iterable.
+    # Just drill a couple holes and bolt it on! That's how Oela Importer was designed to begin with. I've had the "-o" feature in mind for a long time.
+    # Starting with iterable processing only made sense because of the variable length. 
+    if isinstance(repos, Repository):
+        repos = (repos,)
 
     koji_session = create_koji_session(args.kojiconfig)
 
