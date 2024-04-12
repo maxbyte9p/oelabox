@@ -240,4 +240,50 @@ We should see an output like so.
   Import IDs: [125]
 ```
 
-Chunking is really useful for doing groups of imports or starting back where we left off in a situation where Oela Importer is interrupted. Chunking also makes it really easy to do testing or develop scripts. In the logging example without chunking it would have kept going and taken forever to test while writing these docs. Granted the script could have been interrupted with ctrl-c, but it's a bit of a hassle to deal with Python's stacktrace. It also allows us to see what our script might do from beginning to end without having to figure out which output came from where during debugging. 
+Chunking is really useful for doing groups of imports or starting back where we left off in a situation where Oela Importer is interrupted. Chunking also makes it really easy to do testing or develop scripts. In the logging example without chunking it would have kept going and taken forever to test while writing these docs. Granted the script could have been interrupted with ctrl-c, but it's a bit of a hassle to deal with Python's stacktrace. It also allows us to see what our script might do from beginning to end without having to figure out which output came from where during debugging.
+
+#### Only
+Not only does Oela Importer support mass importing it also supports doing specific singular importation. With '-o' we can tell Oela Importer to only import a specific repository.
+
+For example we can tell Oela Importer to only import bash.
+```
+python3.11 tools/oelaimporter/oelaimporter.py -u oelakoji -s openela-main -d dist-oela8 -b el8 -o bash
+```
+
+We should see an output like the following.
+```
+===Oela Importer=============================================================================
+---Import------------------------------------------------------------------------------------
+  Repo: bash
+  Branch Matches: ['el8']
+  Import IDs: [4333]
+```
+
+The 'only' option also allows us to quite easily extend Oela Importer in combination with machine mode. Provided here is a real world example of a Bash script written to allow Oela Importer to import a list of repositories from a file. The script also acts as a logger which can be piped into tee, so we can both view and save the log at the same time.
+
+```
+TOKEN=':^)'
+CMD="python3.11 tools/oelaimporter/oelaimporter.py -t $TOKEN -u oelakoji -s openela-main -d dist-oela8 -b el8 -m"
+
+function do_import() {
+ while read -r line; do $CMD -o "$line"; done < repolist.txt
+}
+
+do_import |
+while read json
+do
+    repo=$(echo $json | jq -r -M '.repo')
+    readarray -t bmatches <<<$(echo $json | jq -r -M '.imported[].branch_match')
+    readarray -t iids <<<$(echo $json | jq -r -M '.imported[].import_id')
+    echo "<$(date)> Imported -- Repo: $repo, Branch Matches: [$(echo ${bmatches[@]} | sed 's/ /, /g')], Import IDs: [$(echo "${iids[@]}" | sed 's/ /, /g')]"
+done
+```
+
+Some may have already noticed that this Bash script looks really similar to the logger example from the Machine Readable Mode section. That's because it essentially is! The examples provided in this documentation are meant to be useful. They are derived from real-life situations during the development of Oela Box. This script was specifically written as a way to import a list of RPM sources that came from the BaseOS repository on Rocky 8. It may be a little slow, but it sure gets the job done!
+
+To run this script:
+```
+sh import_saucelist.sh | tee -a log.txt
+```
+
+I think we're already familiar enough with how this script functions, so outputs won't be provided. I encourage you to experiment on your own and see what can be accomplished by using Oela Importer in simple scripts.
