@@ -3,7 +3,6 @@ SPDX-FileCopyrightText: 2024 Maxine Hayes <maxinehayes90@gmail.com>
 SPDX-License-Identifier: CC-BY-SA-4.0
 -->
 # Technical Aspects of Oela Box
-Oela Box relies on a collection of various software and ideas.
 
 ## Vagrant
 Oela Box relies heavily on Vagrant to create and bring up the virtual machines that encompass the overall development infrastructure for Enterprise Linux. Vagrant's ease of use and programmable Vagrant files make it a great choice for Oela Box. It makes it incredibly easy to spin up virtual machines for testing and development. I have also found it useful for creating a micro infrastructure in a box for Enterprise Linux development.
@@ -21,7 +20,7 @@ The IPA server handles identity management, authentication, DNS resolution and a
 The Koji server is where the magic happens. Koji is a build system for Enterprise Linux. The Koji server is actually made up of a few different smaller pieces. 
 
 ##### Koji Builder
-The Koji Builder or kojid is essentially a builder node that takes request from the Koji Hub. At least one Koji builder is required for our use case. Multiple builders are expected in order to build other architectures however. 
+The Koji Builder or kojid is essentially a builder node that takes requests from the Koji Hub. At least one Koji builder is required for our use case. Multiple builders are expected in order to build other architectures however. 
 
 ##### Koji Hub
 The Koji Hub is what users interact with and send build jobs to. Its job is to relay build tasks from the users to the builders. The Koji Hub uses an XML-RPC API to communicate with clients. It is paired with Koji Web to make it accessible over HTTP using Apache.
@@ -153,7 +152,7 @@ koji.TaskManager is also fairly self-explanatory. It is part of the code which h
 
 It's also important to mention that when I refer to Koji I am reffering to the ecosystem of the tools behind Koji and the Koji python library. The entirety of Koji is mostly one big library written in Python. The different tools that make up the Koji ecosystem all utilize this library then implement their specific features.
 
-To go into more detail about the error and why I believe it occurred: At the time this error occurred I was setting up an external repository to bootstrap my Koji for building RPMS. I set up the external repository to point to the Rocky Linux 8.8 devel repository. This repository is essentially a buildroot meant for Koji instances. It contains packages for 3 different architectures: `aarch64`, `i686`, and `x86_64`. I was mainly focused on the i686 portion as an `i686` buildroot is needed to build some packages for `x86_64`. In fact in the `x86_64` buildroot there are various `i686` packages. `x86_64` is a quirky architecture in general when it comes to multilib support. We need to build for 2 different architectures in order to achieve multilib support. Anyway, Koji has a quirk where when told to support packaging building and repo generation for `i686` it tries to do it for `i386` instead. Instead of looking for the `i686` directory in the external repo like I expect it to it looks for a `i386` directory. The `i386` directory does not exist, so Koji throws an error saying it cannot find `i386` on the external repository. There are 2 ways to solve this issue: The first way is to change the Koji source code. The second is to mirror the repository, serve it with Apache then tell Koji to use the mirrored repository. I have been tinkering with the latter and doing some testing. 
+To go into more detail about the error and why I believe it occurred: At the time this error occurred I was setting up an external repository to bootstrap my Koji for building RPMS. I set up the external repository to point to the Rocky Linux 8.8 devel repository. This repository is essentially a buildroot meant for Koji instances. It contains packages for 3 different architectures: `aarch64`, `i686`, and `x86_64`. I was mainly focused on the i686 portion as an `i686` buildroot is needed to build some packages for `x86_64`. In fact in the `x86_64` buildroot there are various `i686` packages. `x86_64` is a quirky architecture in general when it comes to multilib support. We need to build for 2 different architectures in order to achieve multilib support. Anyway, Koji has a quirk where when told to support packaging building and repo generation for `i686` it tries to do it for `i386` instead. Instead of looking for the `i686` directory in the external repo like I expect it to it looks for a `i386` directory. The `i386` directory does not exist, so Koji throws an error saying it cannot find `i386` on the external repository. This issue was solved by using the Rocky Linux Koji repository for the external repository.
 
 ## Enterprise Linux
 Enterprise Linux development is what Oela Box is designed for. There is a lot of engineering and design choices which go into Enterprise Linux. Enterprise Linux is engineered to be stable and predictable for at least a decade for each release. It has become a standard and proven itself to be a reliable design. Many Linux distributions take note of the Enterprise Linux design and software.
