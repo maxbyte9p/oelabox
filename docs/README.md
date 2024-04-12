@@ -64,6 +64,7 @@ SPDX-License-Identifier: CC-BY-SA-4.0
                 -   [Regex Mode](topics/operation-Tools.md#regmod)
                 -   [Machine Readable Mode](topics/operation-Tools.md#machmod)
                 -   [Chunking](topics/operation-Tools.md#chunking)
+                -   [Only](topics/operation-Tools.md#only)
 
 -   DNS Server
 
