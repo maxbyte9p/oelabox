@@ -14,7 +14,7 @@ For example Oela Importer installed on the Koji Server.
 /home/vagrant/tools/oelaimporter
 ```
 
-The ansible playbook which automatically installs Oela Box tools is called 'setup-oelabox-tools.yml'. It is automatically ran after provisioning and can be run again using the following command.
+The ansible playbook which automatically installs Oela Box tools is called 'setup-oelabox-tools.yml'. It is automatically ran during provisioning and can be run again using the following command.
 ```
 vagrant provision --provision-with tools
 ```
