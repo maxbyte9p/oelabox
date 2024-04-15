@@ -151,7 +151,7 @@
       become: true
       become_user: koji
 
-    - name: "Make sure kojira has repo permision"
+    - name: "Make sure kojira has repo permission"
       ktdreyer.koji_ansible.koji_user:
         koji: koji
         name: kojira
