@@ -9,6 +9,7 @@
     rockybox: https://dl.rockylinux.org/pub/rocky/9.3/images/x86_64/Rocky-9-Vagrant-Libvirt-9.3-20231113.0.x86_64.box
     centosbox: https://cloud.centos.org/centos/8-stream/x86_64/images/CentOS-Stream-Vagrant-8-20240101.0.x86_64.vagrant-libvirt.box
 
+# Below are dnf jobs
   tasks:
     - name: Add hashicorp repo to system
       ansible.builtin.get_url:
@@ -17,11 +18,13 @@
         owner: root
         group: root
         mode: '0644'
+      when: ansible_distribution == "Rocky" or ansible_distribution == "OracleLinux"
 
     - name: Install vagrant
       ansible.builtin.dnf:
         name: vagrant
         state: present
+      when: ansible_distribution == "Rocky" or ansible_distribution == "OracleLinux"
 
     - name: Enable the CRB repository (Rocky)
       community.general.ini_file:
@@ -50,7 +53,57 @@
         name:
           - libvirt-devel
           - libvirt
+    ansib    state: present
+      when: ansible_distribution == "Rocky" or ansible_distribution == "OracleLinux"
+
+    - name: Install ruby and ruby-devel
+      ansible.builtin.dnf:
+        name:
+          - ruby
+          - ruby-devel
         state: present
+      when: ansible_distribution == "Rocky" or ansible_distribution == "OracleLinux"
+
+    - name: Install "Development Tools" group
+      ansible.builtin.dnf:
+        name: '@Development Tools'
+        state: present
+      when: ansible_distribution == "Rocky" or ansible_distribution == "OracleLinux"
+
+    - name: Install "Virtualization Host" group
+      ansible.builtin.dnf:
+        name: '@Virtualization Host'
+        state: present
+      when: ansible_distribution == "Rocky" or ansible_distribution == "OracleLinux"
+
+    - name: Install git if it is not installed (by some means)
+      ansible.builtin.dnf:
+        name: git
+        state: present
+      when: ansible_distribution == "Rocky" or ansible_distribution == "OracleLinux"
+
+    - name: Install pandoc
+      ansible.builtin.dnf:
+        name: pandoc
+        state: present
+      when: ansible_distribution == "Rocky" or ansible_distribution == "OracleLinux"
+
+# Below are apt jobs
+    - name: Install prerequisites
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - git
+        - pandoc
+        - ruby
+        - ruby-dev
+        - qemu-kvm
+        - libvirt-daemon
+        - libvirt-clients
+        - libvirt-dev
+        - vagrant
+      when: ansible_distribution == 'Ubuntu'
 
     - name: Start libvirtd
       ansible.builtin.service:
@@ -62,22 +115,7 @@
         name: libvirtd
         enabled: yes
 
-    - name: Install ruby and ruby-devel
-      ansible.builtin.dnf:
-        name:
-          - ruby
-          - ruby-devel
-        state: present
-
-    - name: Install "Development Tools" group
-      ansible.builtin.dnf:
-        name: '@Development Tools'
-        state: present
-
-    - name: Install "Virtualization Host" group
-      ansible.builtin.dnf:
-        name: '@Virtualization Host'
-        state: present
+# Common jobs
 
     - name: Add invoking user to the libvirt group
       ansible.builtin.user:
@@ -122,16 +160,6 @@
       become: true
       become_user: "{{ invoking_user }}"
 
-    - name: Install git if it is not installed (by some means)
-      ansible.builtin.dnf:
-        name: git
-        state: present
-
-    - name: Install pandoc
-      ansible.builtin.dnf:
-        name: pandoc
-        state: present
-
     - name: Clone ktdreyer.koji_ansible collection
       ansible.builtin.git:
         repo: 'https://github.com/ktdreyer/koji-ansible'
@@ -146,7 +174,7 @@
       become_user: "{{ invoking_user }}"
 
     - name: Install ktdreyer.koji_ansible collection
-      ansible.builtin.shell: "ansible-galaxy collection install /tmp/koji-ansible/_build"
+      ansible.builtin.shell: "ansible-galaxy collection install /tmp/koji-ansible/_build/ktdreyer-koji_ansible-*.tar.gz"
       changed_when: "1 != 1"
       become: true
       become_user: "{{ invoking_user }}"
